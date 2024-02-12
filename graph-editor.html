@@ -94,11 +94,8 @@
 		}
 
 		let from = null
-		let to = null
-		let edge_factory = document.createElementNS("http://www.w3.org/2000/svg", "line");
-		edge_factory.setAttribute("pointer-events", "none");
-		edge_factory.setAttribute("stroke", `black`);
-		svg.appendChild(edge_factory);
+
+		let edge_factory = null;
 
 		svg.addEventListener("pointerup", evt => {
 			if (editModeToggle.checked) {
@@ -117,10 +114,8 @@
 		})
 
 		svg.addEventListener("pointerup", evt => {
-			edge_factory.setAttribute("x1", `${0}`);
-			edge_factory.setAttribute("y1", `${0}`);
-			edge_factory.setAttribute("x2", `${0}`);
-			edge_factory.setAttribute("y2", `${0}`);
+			if (edge_factory)
+				svg.removeChild(document.querySelector("#edge-factory"));
 		});
 
 		function incident_edges(id) {
@@ -136,7 +131,7 @@
 			return edges;
 		}
 
-		svg.addEventListener("pointerup", (evt) => {
+		svg.addEventListener("click", (evt) => {
 			if (editModeToggle.checked) return;
 
 			const x = (evt.offsetX / svg.clientWidth) * 100;
@@ -165,6 +160,11 @@
 			vertex.addEventListener("pointerdown", evt => {
 				if (!editModeToggle.checked) return;
 				from = evt.target;
+				edge_factory = document.createElementNS("http://www.w3.org/2000/svg", "line");
+				edge_factory.setAttribute("id", "edge-factory");
+				edge_factory.setAttribute("pointer-events", "none");
+				edge_factory.setAttribute("stroke", `black`);
+				svg.appendChild(edge_factory);
 			})
 
 			vertex.addEventListener("pointerup", evt => {
@@ -187,10 +187,10 @@
 					edge.addEventListener("click", evt => {
 						if (!editModeToggle.checked) return;
 						evt.stopPropagation();
+
 						const [from_id, to_id] = evt.target.id.split("-")[1].split("-").map(x => parseInt(x));
 						g.removeEdge(from_id, to_id);
-						edges_container.removeChild(evt.srcElement);
-						console.log("blah")
+						edges_container.removeChild(evt.target);
 					})
 				}
 			})
