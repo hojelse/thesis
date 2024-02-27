@@ -5,7 +5,7 @@ import sys
 def parse_graph() -> dict[int, list[int]]:
 	adj = dict()
 	n = ord(sys.stdin.buffer.read(1))
-	for i in range(n):
+	for i in range(1, n+1):
 		adj[i] = []
 	i = 1
 	while i <= n:
@@ -13,7 +13,7 @@ def parse_graph() -> dict[int, list[int]]:
 		if x == 0:
 			i += 1
 			continue
-		adj[i-1].append(x-1)
+		adj[i].append(x)
 	return adj
 
 def find_faces(adj: dict[int, list[int]]) -> list[list[(int, int)]]:
@@ -22,20 +22,20 @@ def find_faces(adj: dict[int, list[int]]) -> list[list[(int, int)]]:
 	edges = set([(i, j) for i in adj for j in adj[i]])
 	faces = []
 	while len(edges) > 0:
-		(first, v) = edges.pop()
-		face = [(first, v)]
-		next_edge = (first, v)
+		first_edge = edges.pop()
+		v = first_edge[1]
+		face = [first_edge]
+		next_edge = first_edge
 		while True:
 			u = adj[next_edge[1]][(adj[next_edge[1]].index(next_edge[0])+1)%3]
 			next_edge = (v, u)
-			edges.remove(next_edge)
-			face.append((v, u))
-			v = u
-			if v == first:
+			if next_edge == first_edge:
 				faces.append(face)
 				break
+			edges.remove(next_edge)
+			face.append(next_edge)
+			v = u
 	return faces
-
 
 adj = parse_graph()
 N = len(adj)
@@ -47,7 +47,7 @@ def is_special_face(face):
 faces = find_faces(adj)
 
 # fix an edge
-fixed_edge = (0, adj[0][0])
+fixed_edge = (1, adj[1][0])
 
 # Augmented graph - deep copy
 aug_adj = dict([(k, [x for x in v]) for k,v in adj.items()])
@@ -69,7 +69,7 @@ for i,face in enumerate(non_special_faces):
 triangles = sorted(set([(i, *sorted([j, k])) for i in face_vertices for j in aug_adj[i] for k in aug_adj[j] if i in aug_adj[k]]))
 
 covered_to_count = {(): 1}
-def count_ham_cycles(i=0, covered=([x for x in range(N)])) -> int:
+def count_ham_cycles(i=0, covered=([x for x in range(1, N+1)])) -> int:
 	covered = tuple(sorted(covered))
 	if covered in covered_to_count:
 		return covered_to_count[covered]
@@ -95,7 +95,7 @@ count_through_fixed_edge = count_ham_cycles()
 # count the number of hamiltonian cycles not through the fixed edge
 covered_to_count = {(): 1}
 non_special_faces = list(filter(lambda face: fixed_edge[0] not in flatten(face), non_special_faces))
-count_not_through_fixed_edge = count_ham_cycles(covered=[x for x in range(N) if x not in fixed_edge])
+count_not_through_fixed_edge = count_ham_cycles(covered=[x for x in range(1, N+1) if x not in fixed_edge])
 
 print(count_through_fixed_edge + count_not_through_fixed_edge)
 print(f"through_fixed: {count_through_fixed_edge}, not_through_fixed: {count_not_through_fixed_edge}")
