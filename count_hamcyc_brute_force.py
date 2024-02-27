@@ -31,11 +31,11 @@ def count_ham_cyc():
 				ham_cycles.append(cycle)
 			finger_prints.add(finger_print)
 
-	print(f"{count//N//2}")
-	print(f"count: {count}")
-	print(f"unique: {count//N//2}")
-	for ham_cyc in ham_cycles:
-		print(ham_cyc)
+	return count//N//2
+	# print(f"count: {count}")
+	# print(f"unique: {count//N//2}")
+	# for ham_cyc in ham_cycles:
+	# 	print(ham_cyc)
 
-count_ham_cyc()
+print(count_ham_cyc())
 
