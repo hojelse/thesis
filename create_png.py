@@ -6,7 +6,7 @@ N, graph_idx = map(int, sys.argv[1:])
 
 G = nx.Graph()
 
-with open(f"./graphs/{N}-{graph_idx}.bin", "r") as file:
+with open(f"./graphs/{N}-{graph_idx}.bin", "rb") as file:
 	byte_s = file.read(1)
 	N = ord(byte_s)
 	
