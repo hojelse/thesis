@@ -1,0 +1,1 @@
+./plantri.bin -c1d $(($1/2+2)) | python3 process_planar_code.py

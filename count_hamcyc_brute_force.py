@@ -1,8 +1,8 @@
 import networkx as nx
 import itertools
-from parse_graph import parse_graph
+from parse_graph import parse_graph_to_nx
 
-G = parse_graph()
+G = parse_graph_to_nx()
 
 N = len(G.nodes)
 vertex_set = list(G.nodes)

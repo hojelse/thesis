@@ -1,27 +1,17 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 import sys
+from parse_graph import parse_graph_to_nx
 
-N, graph_idx = map(int, sys.argv[1:])
-
-G = nx.MultiDiGraph()
-
-with open(f"./graphs/{N}/{N}-{graph_idx}.bin", "rb") as file:
-	byte_s = file.read(1)
-	N = int.from_bytes(byte_s, byteorder='little')
-	
-	for i in range(1, N+1):
-		G.add_node(i)
-	
-	for i in range(1, N+1):
-		G.add_edge(i, int.from_bytes(file.read(1), byteorder='little'))
-		G.add_edge(i, int.from_bytes(file.read(1), byteorder='little'))
-		G.add_edge(i, int.from_bytes(file.read(1), byteorder='little'))
-		file.read(1)
+G = parse_graph_to_nx()
 
 def is_simple(G):
 	for v in G.nodes:
 		es = list(G.edges(v))
+		if len(es) <= 0:
+			print(es)
+			print(v)
+			exit()
 
 		# check for self loops
 		if (v, v) in es:
