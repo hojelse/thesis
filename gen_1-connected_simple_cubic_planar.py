@@ -69,7 +69,7 @@ dual_ids = dict()
 for k,v in dual.items():
 	dual_ids[face_to_id[k]] = [face_to_id[x] for x in v]
 
-with open("graphs2/blah.bin", 'wb') as f:
+with open(f"graphs_big/{len(faces)}.bin", 'wb') as f:
 	f.write(len(faces).to_bytes(1, 'little'))
 	for v,xs in dual_ids.items():
 		for x in xs:
