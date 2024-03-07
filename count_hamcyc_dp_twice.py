@@ -25,8 +25,6 @@ def find_faces(adj: dict[int, list[int]]) -> list[list[(int, int)]]:
 def flatten(xss):
 	return [x for xs in xss for x in xs]
 
-# count_patterns = 0
-
 def count_hamiltonian_cycles(adj: dict[int, list[int]]) -> int:
 
 	def count_partitions(covered_vertices, non_special_faces) -> int:
@@ -54,7 +52,6 @@ def count_hamiltonian_cycles(adj: dict[int, list[int]]) -> int:
 			return partitions_count
 
 		count = count_partitions_aux(0, covered_vertices)
-		print(f"{len(covered_to_count.keys())} / {2**len(adj.keys())} = {len(covered_to_count.keys()) / 2**len(adj.keys())}")
 
 		return count
 	
@@ -86,4 +83,3 @@ def count_hamiltonian_cycles(adj: dict[int, list[int]]) -> int:
 
 adj = parse_graph_to_adj()
 print(count_hamiltonian_cycles(adj))
-# print(count_patterns)
