@@ -84,5 +84,6 @@ def gen_instance():
   return C
   
 C=gen_instance()
+print(chr(len(C)), end="")
 for i in range(len(C)):
-  print(" ".join(map(str,C[i])))
+  print("".join(map(chr, map(lambda i: i+1, C[i]))), end="\x00")
