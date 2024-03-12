@@ -72,10 +72,3 @@ for k,v in dual.items():
 print(chr(len(faces)), end="")
 for v,xs in dual_ids.items():
 	print("".join(map(chr, [*xs])), end="\x00")
-
-# with open(f"graphs_big/{len(faces)}.bin", 'wb') as f:
-# 	f.write(len(faces).to_bytes(1, 'little'))
-# 	for v,xs in dual_ids.items():
-# 		for x in xs:
-# 			f.write(x.to_bytes(1, 'little'))
-# 		f.write(b'\x00')

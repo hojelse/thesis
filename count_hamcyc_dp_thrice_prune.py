@@ -25,8 +25,6 @@ def find_faces(adj: dict[int, list[int]]) -> list[list[(int, int)]]:
 def flatten(xss):
 	return [x for xs in xss for x in xs]
 
-# count_patterns = 0
-
 def count_hamiltonian_cycles(adj: dict[int, list[int]]) -> int:
 
 	def count_partitions(fixed_edge) -> int:
