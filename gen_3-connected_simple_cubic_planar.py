@@ -3,7 +3,7 @@ from random import random
 import sys
 
 if len(sys.argv)>1:
-  DEPTH=int(sys.argv[1])
+  DEPTH=(int(sys.argv[1])-4)//2
 else:  
   DEPTH=5
 FRAC=0.9
