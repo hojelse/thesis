@@ -1,4 +1,4 @@
-from parse_graph import parse_graph_to_adj
+from parse_graph import parse_graph_to_adj, adj_to_bytes
 
 G = parse_graph_to_adj()
 
@@ -23,7 +23,7 @@ def find_faces(adj: dict[int, list[int]]) -> list[list[(int, int)]]:
 			v = u
 	return faces
 
-# Assume planar cubic with clockwise ordering
+# Assume planar and clockwise ordering
 def medial_graph(G):
 	fs = find_faces(G)
 	es = set([tuple(sorted((i, j))) for i in G for j in G[i]])
@@ -34,13 +34,10 @@ def medial_graph(G):
 	M = dict([(i+1, []) for i in range(len(es))])
 
 	for v,xs in G.items():
-		node1 = edge_to_node[tuple(sorted((v, xs[0])))]
-		node2 = edge_to_node[tuple(sorted((v, xs[1])))]
-		node3 = edge_to_node[tuple(sorted((v, xs[2])))]
-		M[node1].extend([node2, node3])
-		M[node2].extend([node3, node1])
-		M[node3].extend([node1, node2])
-
+		nodes = [edge_to_node[tuple(sorted((v, x)))] for x in xs]
+		for i in range(len(nodes)):
+			M[nodes[i]].append(nodes[(i-1)%len(nodes)])
+			M[nodes[i]].append(nodes[(i+1)%len(nodes)])
 	return M
 
 def rat_catching_alg():
@@ -60,5 +57,4 @@ def opt_branch_decomp():
 	Gb = Gc
 	pass
 
-
-medial_graph(G)
+adj_to_bytes(medial_graph(G))
