@@ -1,5 +1,4 @@
 from parse_graph import parse_graph_to_adj
-from itertools import combinations
 
 G = parse_graph_to_adj()
 vertex_set = set(G.keys())
@@ -22,15 +21,15 @@ def decompositions_partitions(xs: set[int]) -> list[list[tuple[set[int], set[int
 				parts.append([(A, vertex_set-A), (B, vertex_set-B), *dA, *dB])
 	return parts
 
-def decompositions(xs: set[int]):
-	if len(xs) == 1:
-		return list(xs)
-	decomps = []
-	for (A, B) in partitions(xs):
-		for dA in decompositions(A):
-			for dB in decompositions(B):
-				decomps.append([dA, dB])
-	return decomps
+# def decompositions(xs: set[int]):
+# 	if len(xs) == 1:
+# 		return list(xs)
+# 	decomps = []
+# 	for (A, B) in partitions(xs):
+# 		for dA in decompositions(A):
+# 			for dB in decompositions(B):
+# 				decomps.append([dA, dB])
+# 	return decomps
 
 # partition width = number of edges in G crossing the partition
 partition_width_cache = dict()

@@ -16,6 +16,14 @@ def parse_graph_to_nx():
 		G.add_edge(i, x)
 	return G
 
+def adj_to_nx(adj):
+	G = nx.MultiDiGraph()
+	for v,xs in adj.items():
+		G.add_node(v)
+		for x in xs:
+			G.add_edge(v, x)
+	return G
+
 def parse_graph_to_adj() -> dict[int, list[int]]:
 	adj = dict()
 	n = ord(sys.stdin.buffer.read(1))
