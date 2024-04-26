@@ -35,7 +35,7 @@
 
 	Enumerate all $N!$ permutations of the $N$ vertices and count how many of those vertex sequences are valid Hamiltonian cycles, by checking firstly that the foremost and final vertex of the sequence are adjacent and secondly that every consecutive pair of vertices in the sequence are adjacent. Then return this count not before dividing by a factor of $2N$, as there are $N$ circular permutations and $2$ inversions of a sequence of $N$ elements.
 
-	A Python program of this algorithm is in the appendix \ref{appx:brute-force-count-ham-cyc}.
+	A Python program of this algorithm is in the appendix \ref{appx:count-hamcyc-brute-force}.
 
 	You cannot do much better\ref{} for this general problem. But if we constrain the input we can do much better.
 
@@ -106,6 +106,8 @@
 		
 \section{Appendix.}
 
-\subsection{Brute force count Hamiltonian Cycles}\label{appx:brute-force-count-ham-cyc}
+\subsection{Count Hamiltonian Cycles with Brute Force}
+\label{appx:count-hamcyc-brute-force}
+\pyfile{count_hamcyc_brute_force.py}
 
 \end{document}

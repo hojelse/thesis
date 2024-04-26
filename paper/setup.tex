@@ -7,6 +7,7 @@
 	\usepackage{mdframed}
 	\usepackage{hyperref} % Add the hyperref package for clickable links
 	\newcommand\bigO{\mathrm{O}}
+	\usepackage[T1]{fontenc}
 
 % Define the theorem-like environments
 	\newtheorem{theorem}{Theorem}[section]  % Numbering within sections
@@ -46,17 +47,20 @@
 % Codeblock
 	\usepackage{minted}
 	\usepackage{xcolor}
-	\definecolor{mintedBg}{rgb}{0.97,0.97,0.98}
+	\definecolor{mintedBg}{rgb}{0.98,0.98,0.98}
 	\setminted[py]{
 		bgcolor=mintedBg,
 		framesep=3mm,
 		fontsize=\footnotesize,
 		linenos,
 		breaklines,
+		breakanywhere,
 	}
 	\newcommand{\pyfile}[1]{%
-		\begin{filecontents*}{#1}
-		\end{filecontents*}
-		\noindent\textbf{#1}\par
-		\inputminted{py}{#1}%
+		\textsf{%
+			\detokenize{#1}%
+		}%
+		\par
+		\inputminted{py}{../code/\detokenize{#1}}%
 	}
+
