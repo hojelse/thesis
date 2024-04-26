@@ -1,0 +1,111 @@
+\documentclass{article}
+\include{setup}
+
+\title{Empirical study of an algorithm for finding Hamiltonian cycles in 3-regular planar graphs.}
+\author{Kristoffer Højelse}
+\date{February 2024}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+	An algorithm in the making considers the problem of finding Hamiltonian cycles in 3-regular planar graphs.
+\end{abstract}
+
+\section{Description of the problem}
+
+	\textsc{The Hamiltonian Cycle Problem} is a computational problem that comes in a few variants, with slightly different input and output types.
+
+	\textsc{The Hamiltonian Cycle Decision problem} asks given a simple graph, to output; yes or no to the question; Does there exist a Hamiltonian Cycle in the graph? Variants might ask for an example/witness/certificate of one such cycle, to make verifying the result easy.
+
+	\textsc{The Hamiltonian Cycle Counting problem} asks given a simple graph, to output; the number of unique Hamiltonian cycles. Solving this problem you get the decision variant for free.
+
+	\begin{definition}
+		\textsc{The Hamiltonian Cycle Counting Problem}
+
+		Input: Given a simple undirected connected graph $G$.
+
+		Output: The number of unique Hamiltonian cycles.
+		
+		A pair of Hamiltonian cycles are not unique if and only if you can obtain the other by circular permutations and inversions of the associated vertex sequences.
+	\end{definition}
+
+	The simplest algorithm I can come up with that solves this problem has a factorial time complexity $\Theta(N!)$.
+
+	Enumerate all $N!$ permutations of the $N$ vertices and count how many of those vertex sequences are valid Hamiltonian cycles, by checking firstly that the foremost and final vertex of the sequence are adjacent and secondly that every consecutive pair of vertices in the sequence are adjacent. Then return this count not before dividing by a factor of $2N$, as there are $N$ circular permutations and $2$ inversions of a sequence of $N$ elements.
+
+	A Python program of this algorithm is in the appendix \ref{appx:brute-force-count-ham-cyc}.
+
+	You cannot do much better\ref{} for this general problem. But if we constrain the input we can do much better.
+
+\section{The domain}
+	The algorithm described in this paper solves \textsc{The Hamiltonian Cycle Counting Problem} with a very contained subset of all graphs; simple undirected connected planar cubic graphs.
+
+	Some informal definitions of the aforementioned properties of graphs:
+
+	\begin{enumerate}
+		\item A graph is called \textbf{simple} if and only if it has no parallel edges and no self-loops.
+		\item A graph is called \textbf{undirected} if and only if all its edges can be traversed in both directions.
+		\item A graph is called \textbf{connected} (or 1-vertex-connected) if and only if there exists a path between any two vertices.
+		\item A graph is called \textbf{planar} if and only if there's a way to draw the graph in 2 dimensions such that no pair of edges crosses.
+		\item A graph is called \textbf{cubic} if and only if every vertex has exactly three neighbors.
+	\end{enumerate}
+
+	Most variants of \textsc{The Hamiltonian Cycle Problem} too require the input graph to be simple, undirected, and connected. These problems probably have no known polynomial-time solutions.
+
+	The algorithm exploits the two remaining attributes, planar and cubic, to obtain a polynomial running time.
+
+\section{Description of the algorithm}
+
+	Overview:
+
+	\begin{enumerate}
+		\item Count Hamiltonian Cycles by Dynamic Programming over a minimal Branch Decomposition.
+		\item Compute a minimal Branch Decomposition from a minimal Carving Decomposition of the Medial graph.
+		\item Compute a minimal Carving Decomposition by repeatedly Contracting edges that doesn't increase the Carving Width.
+		\item Compute the Carving Width with the Rat Catching algorithm which needs to compute a dual graph.
+		\item Compute a dual graph.
+	\end{enumerate}
+
+	\subsection{Dual graph}
+
+		A subroutine of the algorithm computes the dual graph of a graph.
+		
+		\begin{definition}
+			The dual graph $G*$ of a planar graph $G$ is a graph with a vertex $f*$ for each face $f$ of $G$ and an edge $e*$ for each edge $e$ that separates a face $f_1$ of $G$ and a face $f_2$ of $G$.
+		\end{definition}
+		
+		\begin{corollary}
+			If multiple edges separate $f_1$ and $f_2$ there will be multiple edges between $f_1*$ and $f_2*$.
+		\end{corollary}
+		
+		\begin{corollary}\label{def:dual_coro_loop}
+			If $e$ separates $f_1$ and $f_2$ and are the same face, $e*$ will be a self-loop.
+		\end{corollary}
+		
+		For the algorithm in this paper, the class of graphs that will be given as input is medial graphs of simple undirected connected planar cubic graphs.
+		
+		I therefore claim, for now without any proof or argument, that; 
+		
+		\begin{claim}
+			Corollary \ref{def:dual_coro_loop} will be irrelevant for any implementation of the algorithm.
+		\end{claim}
+
+	\subsection{Medial graph}
+		
+		A subroutine of the algorithm computes the medial graph of a graph from the class; simple connected planar cubic graphs.
+		
+		\begin{definition}
+			The medial graph $M(G)$ of a connected plane graph $G$ with a vertex $e*$ for each edge $e$ of $G$ and for each face $f$ of $G$, there's an edge $c*$ between a pair of vertices $e_1*$, $e_2*$ of $M(G)$ if $e_1$ and $e_2$ are consecutive in $f$.
+		\end{definition}
+		
+		todo: argue that simple connected planar cubic graphs are a valid substitution for a connected plane.
+		
+		todo: identify a more succinct description of the class; medial of simple connected planar cubic graphs
+		
+\section{Appendix.}
+
+\subsection{Brute force count Hamiltonian Cycles}\label{appx:brute-force-count-ham-cyc}
+
+\end{document}

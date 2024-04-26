@@ -1,0 +1,1 @@
+latexmk -pvc -shell-escape -pdf -output-directory="./build" main.tex

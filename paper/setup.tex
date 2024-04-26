@@ -1,0 +1,62 @@
+% General
+	\usepackage{graphicx} % Required for inserting images
+	\setlength{\parindent}{0pt}
+	\setlength{\parskip}{8pt} % Vertical space between paragraphs
+	\setlength{\baselineskip}{18pt} % Vertical space between lines
+	\usepackage{amsthm}
+	\usepackage{mdframed}
+	\usepackage{hyperref} % Add the hyperref package for clickable links
+	\newcommand\bigO{\mathrm{O}}
+
+% Define the theorem-like environments
+	\newtheorem{theorem}{Theorem}[section]  % Numbering within sections
+	\newtheorem{definition}[theorem]{Definition}  % Numbering with theorems
+	\newtheorem{corollary}[theorem]{Corollary}  % Numbering with theorems
+	\newtheorem{claim}[theorem]{Claim}  % Numbering with theorems
+	\newtheorem{lemma}[theorem]{Lemma}  % Numbering with theorems
+	\newtheorem{axiom}[theorem]{Axiom}  % Numbering with theorems
+	\newtheorem{conjecture}[theorem]{Conjecture}  % Numbering with theorems
+
+% Define a box style for the theorem-like environments
+	\mdfdefinestyle{theoremstyle}{%
+		linewidth=0pt,
+		backgroundcolor=white,
+		roundcorner=5pt,
+		innertopmargin=6pt,
+		innerbottommargin=0pt,
+		innerrightmargin=32pt,
+		innerleftmargin=16pt,
+	}	
+% Enclose theorem-like environments within boxes
+	\surroundwithmdframed[style=theoremstyle]{theorem}
+	\surroundwithmdframed[style=theoremstyle]{definition}
+	\surroundwithmdframed[style=theoremstyle]{corollary}
+	\surroundwithmdframed[style=theoremstyle]{claim}
+
+
+% Set margins
+	\usepackage{geometry}
+	\geometry{
+		left=3cm,
+		right=3cm,
+		top=2cm,
+		bottom=2cm
+	}
+
+% Codeblock
+	\usepackage{minted}
+	\usepackage{xcolor}
+	\definecolor{mintedBg}{rgb}{0.97,0.97,0.98}
+	\setminted[py]{
+		bgcolor=mintedBg,
+		framesep=3mm,
+		fontsize=\footnotesize,
+		linenos,
+		breaklines,
+	}
+	\newcommand{\pyfile}[1]{%
+		\begin{filecontents*}{#1}
+		\end{filecontents*}
+		\noindent\textbf{#1}\par
+		\inputminted{py}{#1}%
+	}
