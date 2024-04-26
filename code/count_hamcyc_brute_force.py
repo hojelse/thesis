@@ -1,7 +1,7 @@
 import itertools
-from parse_graph import parse_graph_to_adj
+from parse_graph import parse_text_to_adj
 
-G: dict[int, list[int]] = parse_graph_to_adj()
+G: dict[int, list[int]] = parse_text_to_adj()
 vertex_set = G.keys()
 N = len(vertex_set)
 

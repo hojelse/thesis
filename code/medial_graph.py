@@ -15,9 +15,9 @@ def medial_graph(G: dict[int, list[int]]):
 			medial[nodes[i]].append(nodes[(i+1)%len(nodes)])
 	return medial, node_to_edge, edge_to_node
 
-# G = parse_text_to_adj()
-# medial, node_to_edge, edge_to_node = medial_graph(G)
-# adj_to_text(medial)
-# print(len(edge_to_node))
-# for e,x in edge_to_node.items():
-# 	print(e[0], e[1], x)
+G = parse_text_to_adj()
+medial, node_to_edge, edge_to_node = medial_graph(G)
+adj_to_text(medial)
+print(len(edge_to_node))
+for e,x in edge_to_node.items():
+	print(e[0], e[1], x)

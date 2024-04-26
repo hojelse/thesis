@@ -1,5 +1,5 @@
 import networkx as nx
-from parse_graph import parse_graph_to_nx
+from code.parse_graph import parse_graph_to_nx
 
 G1 = parse_graph_to_nx()
 

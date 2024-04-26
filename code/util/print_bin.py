@@ -1,4 +1,4 @@
-from parse_graph import adj_to_bytes
+from code.parse_graph import adj_to_bytes
 adj = {
 	1: [2,3,4,5,6],
 	2: [3,1,6],

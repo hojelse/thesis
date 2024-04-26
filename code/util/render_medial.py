@@ -1,4 +1,4 @@
-from parse_graph import parse_graph_to_adj, adj_to_nx
+from code.parse_graph import parse_graph_to_adj, adj_to_nx
 from medial_graph import medial_graph
 import matplotlib.pyplot as plt
 import networkx as nx

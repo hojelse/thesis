@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 import sys
-from parse_graph import parse_graph_to_nx
+from code.parse_graph import parse_graph_to_nx
 
 G = parse_graph_to_nx()
 

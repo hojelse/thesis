@@ -1,5 +1,5 @@
 import sys
-from parse_graph import adj_to_bytes
+from code.parse_graph import adj_to_bytes
 
 adj = dict()
 
