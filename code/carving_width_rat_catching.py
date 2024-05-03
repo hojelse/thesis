@@ -128,7 +128,7 @@ def carving_width_rat_catching(G) -> int:
 	
 	return binary_search_cw()
 
-G = parse_text_to_adj()
-cw = carving_width_rat_catching(G)
-print("cw is", cw)
-
+if __name__ == "__main__":
+	G = parse_text_to_adj()
+	cw = carving_width_rat_catching(G)
+	print("cw is", cw)

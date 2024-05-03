@@ -93,9 +93,10 @@ def dual_graph(G: dict[int, list[int]]):
 
 	return D, _D, linkid_to_nodepair, edgeid_to_linkid, linkid_to_edgeid, nodeid_to_edgeids, edgeid_to_nodeid, edgeid_to_vertexpair, _G, G
 
-# G = parse_text_to_adj()
-# D, _D, linkid_to_nodepair, edgeid_to_linkid, linkid_to_edgeid, nodeid_to_edgeids, edgeid_to_nodeid, G, _G, edgeid_to_vertexpair = dual_graph(G)
-# adj_to_text(D)
+if __name__ == "__main__":
+	G = parse_text_to_adj()
+	D, _D, linkid_to_nodepair, edgeid_to_linkid, linkid_to_edgeid, nodeid_to_edgeids, edgeid_to_nodeid, G, _G, edgeid_to_vertexpair = dual_graph(G)
+	adj_to_text(D)
 
 # print("G", G)
 # print("_G", _G)
