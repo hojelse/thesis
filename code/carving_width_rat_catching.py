@@ -5,21 +5,34 @@ import math
 def carving_width_rat_catching(G) -> int:
 	D, _D, linkid_to_nodepair, edgeid_to_linkid, linkid_to_edgeid, nodeid_to_edgeids, edgeid_to_nodeid, edgeid_to_vertexpair,_,_ = dual_graph(G)
 
-
 	# When the rat-catcher is on edge e, edge f is noisy iff there is
 	# a closed walk of at most length k containing e* and f* in G* .
 	# Return the un-noisy subgraph.
 	def noisy_links(l: int, k: int) -> set[int]:
 		s,t = linkid_to_nodepair[l]
-		noisy = set()
-		def bfs(walk_acc: list[int]):
-			if len(walk_acc) == k: return
-			v = linkid_to_nodepair[walk_acc[-1]][1]
-			if v == s:
-				noisy.update(walk_acc)
-			for e in _D[v]:
-				bfs(walk_acc + [e])
-		bfs([l])
+		links = linkid_to_edgeid.keys()
+
+		def dists(n: int) -> dict[int, int]:
+			dist = {v: -1 for v in D.keys()}
+			dist[n] = 0
+			stack = [n]
+			while len(stack) > 0:
+				v = stack.pop()
+				for y in D[v]:
+					if dist[y] == -1:
+						dist[y] = dist[v] + 1
+						stack.append(y)
+			return dist
+		
+		dist_s = dists(s)
+		dist_t = dists(t)
+
+		noisy = []
+		for l in links:
+			u,v = linkid_to_nodepair[l]
+			if dist_s[u] + dist_t[v] + 2 < k:
+				noisy.append(l)
+
 		return set([abs(e) for e in noisy])
 
 	def quiet_links(l: int, k: int) -> set[int]:
@@ -126,7 +139,8 @@ def carving_width_rat_catching(G) -> int:
 				r = m - 1
 		return l
 	
-	return binary_search_cw()
+	cw = binary_search_cw()
+	return cw
 
 if __name__ == "__main__":
 	G = parse_text_to_adj()
