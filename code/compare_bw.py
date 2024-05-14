@@ -1,6 +1,7 @@
 import subprocess
 import time
 import datetime
+import math
 
 ns = [10,14,18,22,26,30,34,38,42,46,50,54,58,62,66,70,74,78,82,86,90,94,98]
 
@@ -10,4 +11,8 @@ for n in ns:
 		r = subprocess.run(['python3', 'branch_width.py'], stdin=f, text=True, capture_output=True)
 		res = r.stdout.strip()
 		seconds_elapsed = time.time() - start_time
-		print(f"{n} {res} {str(datetime.timedelta(seconds=seconds_elapsed))}")
+		print("n", n)
+		print("bound", 2.122*math.sqrt(n))
+		print(res)
+		print("time", str(datetime.timedelta(seconds=seconds_elapsed)))
+		print()

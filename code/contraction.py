@@ -1,31 +1,55 @@
-from parse_graph import parse_text_to_adj, adj_to_text
 
-def contraction(G: dict[int, list[int]], e: tuple[int, int]) -> dict[int, list[int]]:
-	a,b = e
-	G2 = G.copy()
-	
-	idx1 = G2[a].index(b)
-	rotated_Ga = G2[a][idx1:] + G2[a][:idx1]
+from Graph import Graph
+from parse_graph import adj_to_text, parse_text_to_adj
 
-	idx2 = G2[b].index(a)
-	rotated_Gb = G2[b][idx2:] + G2[b][:idx2]
+def index_of_first(lst, pred):
+	for i, v in enumerate(lst):
+		if pred(v):
+			return i
+	return None
 
-	c = max(G2.keys()) + 1
+def contraction(G: Graph, a: int, b: int) -> Graph:
+	# copy G
+	G1 = G.copy()
 
-	G2[c] = rotated_Gb + rotated_Ga
+	c = max(G1.adj_edges.keys()) + 1
 
-	for x,ys in G2.items():
-		G2[x] = [(c if y==a or y==b else y) for y in ys]
+	# let every edge incident to a or b be incident to c instead
+	for e in G1.E():
+		u,v = G1.edge_to_vertexpair[e]
+		if u == a or u == b:
+			G1.edge_to_vertexpair[e] = (c, v)
+		u,v = G1.edge_to_vertexpair[e]
+		if v == a or v == b:
+			G1.edge_to_vertexpair[e] = (u, c)
 
-	del G2[b]
-	del G2[a]
+	# create neighborhood of c
+	first_shared_edge = G1.adj_edges[a][index_of_first(G1.adj_edges[a], lambda e: G1.edge_to_vertexpair[e][0] == c and G1.edge_to_vertexpair[e][1] == c)]
 
-	G2[c] = [y for y in G2[c] if y != a and y != b and y != c]
+	idx1 = G1.adj_edges[a].index(first_shared_edge)
+	rotated_Ga = G1.adj_edges[a][idx1:] + G1.adj_edges[a][:idx1]
 
-	return G2, c
+	idx2 = G1.adj_edges[b].index(-first_shared_edge)
+	rotated_Gb = G1.adj_edges[b][idx2:] + G1.adj_edges[b][:idx2]
+
+	G1.adj_edges[c] = rotated_Ga + rotated_Gb
+
+	# remove c <-> c edges
+	G1.adj_edges[c] = [e for e in G1.adj_edges[c] if not (G1.edge_to_vertexpair[e][0] == G1.edge_to_vertexpair[e][1] == c)]
+	G1.edge_to_vertexpair = dict([(k,v) for k,v in G1.edge_to_vertexpair.items() if not (v[0] == v[1] == c)])
+
+	# remove a and b
+	del G1.adj_edges[a]
+	del G1.adj_edges[b]
+
+	return G1, c
 
 if __name__ == "__main__":
-	G = parse_text_to_adj()
-	input()
-	G1, c = contraction(G, tuple(sorted(map(int, input().split()))))
-	adj_to_text(G1)
+	a,b = map(int, input().split())
+	adj = parse_text_to_adj()
+
+	G = Graph()
+	G.from_adj(adj)
+	G1, c = contraction(G, a, b)
+	adj_to_text(G1.adj())
+	print("c", c)

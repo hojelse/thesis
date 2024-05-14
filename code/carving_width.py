@@ -1,24 +1,26 @@
-from parse_graph import parse_text_to_adj
-from dual_graph import dual_graph
 import math
 
-def carving_width_rat_catching(G) -> int:
-	D, _D, linkid_to_nodepair, edgeid_to_linkid, linkid_to_edgeid, nodeid_to_edgeids, edgeid_to_nodeid, edgeid_to_vertexpair,_,_ = dual_graph(G)
+from Graph import Graph
+from parse_graph import parse_text_to_adj
+from dual_graph import dual_graph
+
+def carving_width(G: Graph) -> int:
+	D, edge_to_link, link_to_edge, node_to_face, edge_to_node = dual_graph(G)
 
 	# When the rat-catcher is on edge e, edge f is noisy iff there is
 	# a closed walk of at most length k containing e* and f* in G* .
 	# Return the un-noisy subgraph.
 	def noisy_links(l: int, k: int) -> set[int]:
-		s,t = linkid_to_nodepair[l]
-		links = linkid_to_edgeid.keys()
+		s,t = D.edge_to_vertexpair[l]
+		links = link_to_edge.keys()
 
 		def dists(n: int) -> dict[int, int]:
-			dist = {v: -1 for v in D.keys()}
+			dist = {v: -1 for v in D.V()}
 			dist[n] = 0
 			stack = [n]
 			while len(stack) > 0:
 				v = stack.pop()
-				for y in D[v]:
+				for y in D.N(v):
 					if dist[y] == -1:
 						dist[y] = dist[v] + 1
 						stack.append(y)
@@ -29,25 +31,28 @@ def carving_width_rat_catching(G) -> int:
 
 		noisy = []
 		for l in links:
-			u,v = linkid_to_nodepair[l]
-			if dist_s[u] + dist_t[v] + 2 < k:
+			u,v = D.edge_to_vertexpair[l]
+			if min(
+				dist_s[u] + dist_t[v] + 2,
+				dist_s[v] + dist_t[u] + 2
+			) < k:
 				noisy.append(l)
 
 		return set([abs(e) for e in noisy])
 
 	def quiet_links(l: int, k: int) -> set[int]:
-		links = set([abs(e) for e in linkid_to_nodepair.keys()])
+		links = set([abs(e) for e in D.E()])
 		return links - noisy_links(l, k)
 
 	def quiet_edges(e: int, k: int) -> set[int]:
-		return set([abs(linkid_to_edgeid[l]) for l in quiet_links(edgeid_to_linkid[e], k)])
+		return set([abs(link_to_edge[l]) for l in quiet_links(edge_to_link[e], k)])
 
 	def quiet_components(e: int, k: int) -> dict[int, list[int]]:
 		edges = quiet_edges(e, k)
 
-		quiet_subgraph = {v: [] for v in G.keys()}
+		quiet_subgraph = {v: [] for v in G.V()}
 		for e in edges:
-			u,v = edgeid_to_vertexpair[e]
+			u,v = G.edge_to_vertexpair[e]
 			quiet_subgraph[u].append(e)
 			quiet_subgraph[v].append(-e)
 
@@ -61,13 +66,15 @@ def carving_width_rat_catching(G) -> int:
 			while len(stack) > 0:
 				v = stack.pop()
 				for e in quiet_subgraph[v]:
-					u,v = edgeid_to_vertexpair[e]
+					u,v = G.edge_to_vertexpair[e]
 					if v in unseen:
 						unseen.remove(v)
 						stack.append(v)
 						component.append(v)
 			components.append(component)
 
+		# print("e", e, "(u,v)", G.edge_to_vertexpair[e], "k", k)
+		# print("quiet_components", components)
 		return components
 
 	def flatten(xss):
@@ -78,22 +85,23 @@ def carving_width_rat_catching(G) -> int:
 	# iff. carving-width >= k
 	# iff. rat has a winning escape strategy with noise-level k
 	def rat_wins(k: int) -> bool:
-		if len(G) < 2:
+		if len(G.V()) < 2:
 			return False
 		
-		if max([len(G[v]) for v in G]) >= k:
+		if max([len(G.N(v)) for v in G.V()]) >= k:
 			return True
 
-		edge_set = edgeid_to_linkid.keys()
+		edge_set = edge_to_link.keys()
 
+		
 		Te = set([(e, tuple(C)) for e in edge_set for C in quiet_components(e, k)])
-		Sr = set([(r, v) for r in nodeid_to_edgeids.keys() for v in G.keys()])
+		Sr = set([(r, v) for r in node_to_face.keys() for v in G.V()])
 
 		losing_eC = set()
 		losing_rv = set()
 
 		for (r, v) in Sr:
-			if v in flatten([edgeid_to_vertexpair[e] for e in nodeid_to_edgeids[r]]):
+			if v in flatten([G.edge_to_vertexpair[e] for e in node_to_face[r]]):
 				losing_rv.add((r,v))
 
 		if len(Te) == len(losing_eC) or len(Sr) == len(losing_rv):
@@ -103,14 +111,14 @@ def carving_width_rat_catching(G) -> int:
 			new_deletion = False
 
 			for (e, C) in Te:
-				if all([(edgeid_to_nodeid[e], v) in losing_rv for v in C]):
+				if all([(edge_to_node[e], v) in losing_rv for v in C]):
 					if (e, C) not in losing_eC:
 						new_deletion = True
 						losing_eC.add((e, C))
 			
 			for (e, C) in losing_eC:
-				r1 = edgeid_to_nodeid[e]
-				r2 = edgeid_to_nodeid[-e]
+				r1 = edge_to_node[e]
+				r2 = edge_to_node[-e]
 				for (r, v) in [(r1, v) for v in C] + [(r2, v) for v in C]:
 					if (r, v) not in losing_rv:
 						new_deletion = True
@@ -125,6 +133,7 @@ def carving_width_rat_catching(G) -> int:
 		l = 0
 		r = 1
 		while True:
+			# print("trying", r)
 			if rat_wins(r):
 				l = r
 				r *= 2
@@ -133,6 +142,7 @@ def carving_width_rat_catching(G) -> int:
 		m = l
 		while l < r:
 			m = int(math.ceil((l + r) / 2))
+			# print("trying", m)
 			if rat_wins(m):
 				l = m
 			else:
@@ -143,6 +153,9 @@ def carving_width_rat_catching(G) -> int:
 	return cw
 
 if __name__ == "__main__":
-	G = parse_text_to_adj()
-	cw = carving_width_rat_catching(G)
-	print("cw is", cw)
+	adj = parse_text_to_adj()
+
+	G = Graph()
+	G.from_adj(adj)
+	cw = carving_width(G)
+	print("cw", cw)
