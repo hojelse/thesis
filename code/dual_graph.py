@@ -10,7 +10,7 @@ def dual_graph(G: Graph) -> Graph:
 	node_to_face = dict()
 	edge_to_node = dict()
 
-	next_nodeid = 1
+	next_nodeid = -1
 	while edges:
 		e = edges.pop()
 		next_e = e
@@ -28,7 +28,7 @@ def dual_graph(G: Graph) -> Graph:
 			face.append(next_e)
 			edge_to_node[next_e] = next_nodeid
 		node_to_face[next_nodeid] = face
-		next_nodeid += 1
+		next_nodeid -= 1
 
 	for i in node_to_face.keys():
 		D.adj_edges[i] = []
