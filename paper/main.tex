@@ -1,7 +1,7 @@
 \documentclass{article}
 \include{setup}
 
-\title{Empirical study of an algorithm for finding Hamiltonian cycles in 3-regular planar graphs.}
+\title{Implementation of an optimal branch-decomposition algorithm for planar graphs.}
 \author{Kristoffer Højelse}
 \date{February 2024}
 
@@ -10,37 +10,32 @@
 \maketitle
 
 \begin{abstract}
-	An algorithm in the making considers the problem of finding Hamiltonian cycles in 3-regular planar graphs.
+	Seymour and Thomas give an algorithm, the rat-catching algorithm, for deciding $bw(G) \leq c$ in $O(n^2)$ time, and by using it as a subroutine, an algorithm to compute an optimal branch-decomposition in $O(n^4)$ time. In this paper, I describe an implementation of this algorithm and publish the source code.
 \end{abstract}
 
+\section{Motivation}
+	Graph optimization problems may be solved efficiently for graphs of small branchwidth.
+
 \section{Description of the problem}
+	A branch decomposition $B$ of a graph $G$ is a connected tree where every edge of $G$ is a leaf in $B$ and every internal vertex of $B$ has exactly 3 neighbors.
 
-	\textsc{The Hamiltonian Cycle Problem} is a computational problem that comes in a few variants, with slightly different input and output types.
+	Removing any edge $e = \{u,v\}$ of $B$ partitions $B$ into 2 trees $B_u$ and $B_v$ and the intersection of the sets of vertices in the leaves of $B_u$ and $B_v$ is called a middle set and is associated with the edge $e$. Every edge of $B$ therefore, has an associated middle set. The maximal cardinality of any middle set among all middle sets of $B$ is the width of the branch decomposition $B$.
 
-	\textsc{The Hamiltonian Cycle Decision problem} asks given a simple graph, to output; yes or no to the question; Does there exist a Hamiltonian Cycle in the graph? Variants might ask for an example/witness/certificate of one such cycle, to make verifying the result easy.
+	There can be many branch decompositions of a graph $G$.
 
-	\textsc{The Hamiltonian Cycle Counting problem} asks given a simple graph, to output; the number of unique Hamiltonian cycles. Solving this problem you get the decision variant for free.
+	A minimal branch decomposition of $G$ is any branch decomposition of $G$ of minimal width among all branch decompositions of $G$.
 
 	\begin{definition}
-		\textsc{The Hamiltonian Cycle Counting Problem}
+		\textsc{The Minimal Branch Decomposition Problem}
 
 		Input: Given a simple undirected connected graph $G$.
 
-		Output: The number of unique Hamiltonian cycles.
-		
-		A pair of Hamiltonian cycles are not unique if and only if you can obtain the other by circular permutations and inversions of the associated vertex sequences.
+		Output: A minimal branch decomposition of $G$.
 	\end{definition}
 
-	The simplest algorithm I can come up with that solves this problem has a factorial time complexity $\Theta(N!)$.
-
-	Enumerate all $N!$ permutations of the $N$ vertices and count how many of those vertex sequences are valid Hamiltonian cycles, by checking firstly that the foremost and final vertex of the sequence are adjacent and secondly that every consecutive pair of vertices in the sequence are adjacent. Then return this count not before dividing by a factor of $2N$, as there are $N$ circular permutations and $2$ inversions of a sequence of $N$ elements.
-
-	A Python program of this algorithm is in the appendix \ref{appx:count-hamcyc-brute-force}.
-
-	You cannot do much better\ref{} for this general problem. But if we constrain the input we can do much better.
 
 \section{The domain}
-	The algorithm described in this paper solves \textsc{The Hamiltonian Cycle Counting Problem} with a very contained subset of all graphs; simple undirected connected planar cubic graphs.
+	The algorithm described in this paper solves \textsc{The Minimal Branch Decomposition Problem} with an additional constraint of the input graph being planar.
 
 	Some informal definitions of the aforementioned properties of graphs:
 
@@ -48,32 +43,32 @@
 		\item A graph is called \textbf{simple} if and only if it has no parallel edges and no self-loops.
 		\item A graph is called \textbf{undirected} if and only if all its edges can be traversed in both directions.
 		\item A graph is called \textbf{connected} (or 1-vertex-connected) if and only if there exists a path between any two vertices.
-		\item A graph is called \textbf{planar} if and only if there's a way to draw the graph in 2 dimensions such that no pair of edges crosses.
-		\item A graph is called \textbf{cubic} if and only if every vertex has exactly three neighbors.
+		\item A graph is called \textbf{planar} if and only if there is a way to draw the graph in 2 dimensions such that no pair of edges crosses.
 	\end{enumerate}
 
-	Most variants of \textsc{The Hamiltonian Cycle Problem} too require the input graph to be simple, undirected, and connected. These problems probably have no known polynomial-time solutions.
+	Different subroutines of the algorithm that take a graph as argument, assume different properties of the graph.
 
-	The algorithm exploits the two remaining attributes, planar and cubic, to obtain a polynomial running time.
+	\subsection{Medial graph}
+		
+		A subroutine of the algorithm computes the medial graph of a graph from the class; simple connected planar cubic graphs.
+		
+		\begin{definition}
+			The medial graph $M(G)$ of a connected plane graph $G$ with a vertex $e^*$ for each edge $e$ of $G$ and for each face $f$ of $G$, there's an edge $c*$ between a pair of vertices $e_1*$, $e_2*$ of $M(G)$ if $e_1$ and $e_2$ are consecutive in $f$.
+		\end{definition}
+		
+		todo: argue that simple connected planar cubic graphs are a valid substitution for a connected plane.
+		
+		todo: identify a more succinct description of the class; medial of simple connected planar cubic graphs
 
-\section{Description of the algorithm}
+		An implementation of this subroutine can be found in the appendix \ref{appx:medial-graph}.
 
-	Overview:
-
-	\begin{enumerate}
-		\item Count Hamiltonian Cycles by Dynamic Programming over a minimal Branch Decomposition.
-		\item Compute a minimal Branch Decomposition from a minimal Carving Decomposition of the Medial graph.
-		\item Compute a minimal Carving Decomposition by repeatedly Contracting edges that doesn't increase the Carving Width.
-		\item Compute the Carving Width with the Rat Catching algorithm which needs to compute a dual graph.
-		\item Compute a dual graph.
-	\end{enumerate}
-
+	
 	\subsection{Dual graph}
-
+	
 		A subroutine of the algorithm computes the dual graph of a graph.
 		
 		\begin{definition}
-			The dual graph $G*$ of a planar graph $G$ is a graph with a vertex $f*$ for each face $f$ of $G$ and an edge $e*$ for each edge $e$ that separates a face $f_1$ of $G$ and a face $f_2$ of $G$.
+			The dual graph $G*$ of a planar graph $G$ is a graph with a vertex $f*$ for each face $f$ of $G$ and an edge $e^*$ for each edge $e$ that separates a face $f_1$ of $G$ and a face $f_2$ of $G$.
 		\end{definition}
 		
 		\begin{corollary}
@@ -81,7 +76,7 @@
 		\end{corollary}
 		
 		\begin{corollary}\label{def:dual_coro_loop}
-			If $e$ separates $f_1$ and $f_2$ and are the same face, $e*$ will be a self-loop.
+			If $e$ separates $f_1$ and $f_2$ and are the same face, $e^*$ will be a self-loop.
 		\end{corollary}
 		
 		For the algorithm in this paper, the class of graphs that will be given as input is medial graphs of simple undirected connected planar cubic graphs.
@@ -91,23 +86,119 @@
 		\begin{claim}
 			Corollary \ref{def:dual_coro_loop} will be irrelevant for any implementation of the algorithm.
 		\end{claim}
+		
+		An implementation of this subroutine can be found in the appendix \ref{appx:dual-graph}.
+		
+	\subsection{Edge contraction}
 
-	\subsection{Medial graph}
-		
-		A subroutine of the algorithm computes the medial graph of a graph from the class; simple connected planar cubic graphs.
-		
+		A subroutine of the algorithm computes the resulting graph from an edge contraction.
+
+		This operation is a bit different from the conventional understanding of an edge contraction.
+
 		\begin{definition}
-			The medial graph $M(G)$ of a connected plane graph $G$ with a vertex $e*$ for each edge $e$ of $G$ and for each face $f$ of $G$, there's an edge $c*$ between a pair of vertices $e_1*$, $e_2*$ of $M(G)$ if $e_1$ and $e_2$ are consecutive in $f$.
+			Edge contraction.
+
+			Given an undirected Graph $G=\{V,E\}$ with no self-loops and pair of vertices $u,v \in V$ such that $\{u,v\} \in E$, remove all edges between $u$ and $v$ and update every edge $\{v,w\} \in E$ to be $\{u,w\}$.
 		\end{definition}
-		
-		todo: argue that simple connected planar cubic graphs are a valid substitution for a connected plane.
-		
-		todo: identify a more succinct description of the class; medial of simple connected planar cubic graphs
-		
+
+		The resulting graph might have parallel edges but will not have self-loops.
+
+\section{Description of the algorithm}
+
+	The algorithm computes a minimal branch decomposition of a simple connected planar graph $G$, the width of this branch decomposition is the branch width of $G$. This section describes a high-level set of problems for the algorithm to tackle.
+
+	\begin{problem}\label{desc:mbd}
+		Given a simple connected planar graph $G$, output a minimal branch decomposition of $G$.
+	\end{problem}
+
+	Problem \ref{desc:mbd} is the overarching problem, that the algorithm solves, and can be broken down into many smaller subproblems.
+
+	For the first large step in the algorithm, we use the fact that a minimal carving decomposition of the medial of a graph $G$ can be translated into a minimal branch decomposition of $G$, by replacing the vertices in leaves of the decompositions with edges, using the mapping between edges and vertices from computing the medial graph.
+
+	The argument for why this is true can be found in \ref{}.
+
+	\begin{problem}
+		Given a graph $G$ and a minimal carving decomposition of a medial graph of $G$, output a minimal branch decomposition of $G$.
+	\end{problem}
+
+	For both branch- and carving-decompositions, I have chosen a data structure of tuples of tuples or integers. This has a straightforward translation to the Newick tree format, a concise notation for tree structures.
+
+	To then solve the above-mentioned problem, the implementation recursively returns a copy of any tuple, but returns a tuple of integers for any integer, using the mapping from medial node to vertex pair.
+
+	\pyfile{branch_decomposition.py}
+
+	\begin{problem}
+		Given a graph $G$, output a medial graph and a mapping from medial nodes to vertex pairs.
+	\end{problem}
+
+	The medial graph $M$ of $G$ is a graph where there is a node in $M$ for each edge in $G$, and an edge between two nodes if their edges are consecutive in a face of $G$.
+
+	Therefore if you assume that the adjacency list of $G$ is given such that the neighborhoods are given in clockwise ordering according to some plane embedding of $G$ then a pair of consecutive nodes in a neighborhood are also consecutive edges in some face of $G$.
+
+	\pyfile{medial_graph.py}
+
+	For the upcoming problems one needs to deal with parallel edges and be able to tell them apart, therefore the implementation uses a data structure that encapsulates an adjacency list of edges and a map from unique edge ids its vertexpair.
+
+	I have chosen to assign IDs such that if one halfedge has ID $i$ then the other halfedge has ID $-i$, therefore the absolute value $|i|$ uniquely identifies an undirected edge.
+
+	\pyfile{graph.py}
+
+	Doing a series of edge contractions (contraction of all edges between a pair of vertices) on a graph $M$, where the carving width does not increase until 3 vertices remain, then the series of contracted edges along with the three vertices can be reassembled into a minimal carving decomposition of $M$.
+
+	The argument for why this is true can be found in \ref{}.
+
+	\begin{problem}
+		Given a graph $G$ that might have parallel edges, output a graph resulting from a contraction of all edges between a pair of vertices, preserving clockwise ordering.
+	\end{problem}
+
+	As the resulting graph is later given as an argument to functions assuming a clockwise ordering of vertices, the implementation needs to preserve this invariant when contracting.
+
+	As the contraction is a contraction of ALL edges between a pair of vertices, the resulting graph will not exhibit any self-loops. I suspect reconciling this and the ordering invariant could be difficult, but luckily in this context, it is irrelevant.
+
+	For a contraction of vertices $a$ and $b$, I have chosen to create a new vertex ID $c$ instead of reusing $a$ or $b$ as this later makes assembling the carving decomposition easier.
+
+	Creating the neighborhood of $c$ from the neighborhoods of $a$ and $b$ is done by finding the first edge that the adjacency lists of $a$ and $b$ have in common, and then "rotating" the adjacency lists such that a concatenation of the lists preserve the ordering. This is where telling apart parallel edges is very useful.
+
+	\pyfile{contraction.py}
+
+	I will defer describing how to compute the carving width and focus on the following problem for now.
+
+	\begin{problem}
+		Given a graph $G$ and function to compute the carving width of a graph, output a minimal carving decomposition of $G$.
+	\end{problem}
+
+	The implementation finds a nonincreasing contraction by doing a linear search over every edge. No consideration has yet been given to any potential clever orderings of the edges that might improve the running time.
+
+	The sequence of contracted edges is found and reassembled into a minimal carving decomposition.
+
+	\pyfile{carving_decomposition.py}
+
+	\begin{problem}
+		Given a graph $M$ that might have parallel edges, output the carving width of $M$.
+	\end{problem}
+
+	The rat-catching algorithm decides $cw(M) \geq k$ with $k$ being in the positive integers. This is a monotonic boolean space, so you can perform a binary search to find the smallest $k$ where $cw(M) \geq k$ is true.
+
+	The proposition $cw(M) \geq k$ is true if and only if $\Delta(M) \geq k$ or the rat can evade the rat-catcher indefinitely, with noise-level $k$, in a particular game based on $M$.
+
+	\pyfile{carving_width.py}
+
+	\begin{problem}
+		Given a graph $G$ that might have parallel edges, output the dual of $G$.
+	\end{problem}
 \section{Appendix.}
 
-\subsection{Count Hamiltonian Cycles with Brute Force}
-\label{appx:count-hamcyc-brute-force}
-\pyfile{count_hamcyc_brute_force.py}
+	\subsection{Count Hamiltonian Cycles with Brute Force}
+		\label{appx:count-hamcyc-brute-force}
+		\pyfile{count_hamcyc_brute_force.py}
+
+	\subsection{Medial graph}
+		\label{appx:medial-graph}
+		\pyfile{medial_graph.py}
+
+	\subsection{Dual graph}
+		\label{appx:dual-graph}
+		\pyfile{dual_graph.py}
+
 
 \end{document}

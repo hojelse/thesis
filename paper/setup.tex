@@ -9,7 +9,21 @@
 	\newcommand\bigO{\mathrm{O}}
 	\usepackage[T1]{fontenc}
 
+
 % Define the theorem-like environments
+	% Define a new theorem style with upright text
+	\newtheoremstyle{plainupright} % Name of the style
+	{10pt}                        % Space above
+	{3pt}                        % Space below
+	{}                           % Body font (default is \itshape which is italics)
+	{}                           % Indent amount
+	{\bfseries}                  % Theorem head font
+	{.}                          % Punctuation after theorem head
+	{ }                          % Space after theorem head
+	{}                           % Theorem head spec (can be left empty, meaning 'normal')
+	
+	\theoremstyle{plainupright}
+
 	\newtheorem{theorem}{Theorem}[section]  % Numbering within sections
 	\newtheorem{definition}[theorem]{Definition}  % Numbering with theorems
 	\newtheorem{corollary}[theorem]{Corollary}  % Numbering with theorems
@@ -17,6 +31,17 @@
 	\newtheorem{lemma}[theorem]{Lemma}  % Numbering with theorems
 	\newtheorem{axiom}[theorem]{Axiom}  % Numbering with theorems
 	\newtheorem{conjecture}[theorem]{Conjecture}  % Numbering with theorems
+	\newtheorem{problem}[theorem]{Problem}  % Numbering with theorems
+
+% Enclose theorem-like environments within boxes
+	\surroundwithmdframed[style=theoremstyle]{theorem}
+	\surroundwithmdframed[style=theoremstyle]{definition}
+	\surroundwithmdframed[style=theoremstyle]{corollary}
+	\surroundwithmdframed[style=theoremstyle]{claim}
+	\surroundwithmdframed[style=theoremstyle]{lemma}
+	\surroundwithmdframed[style=theoremstyle]{axiom}
+	\surroundwithmdframed[style=theoremstyle]{conjecture}
+	\surroundwithmdframed[style=theoremstyle]{problem}
 
 % Define a box style for the theorem-like environments
 	\mdfdefinestyle{theoremstyle}{%
@@ -28,12 +53,6 @@
 		innerrightmargin=32pt,
 		innerleftmargin=16pt,
 	}	
-% Enclose theorem-like environments within boxes
-	\surroundwithmdframed[style=theoremstyle]{theorem}
-	\surroundwithmdframed[style=theoremstyle]{definition}
-	\surroundwithmdframed[style=theoremstyle]{corollary}
-	\surroundwithmdframed[style=theoremstyle]{claim}
-
 
 % Set margins
 	\usepackage{geometry}
