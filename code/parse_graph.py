@@ -1,4 +1,3 @@
-import networkx as nx
 import sys
 
 def parse_bin_to_adj() -> dict[int, list[int]]:
@@ -30,6 +29,12 @@ def adj_to_text(adj):
 	print(len(adj))
 	for v,xs in adj.items():
 		print(v, *xs)
+
+def adj_to_text_2(adj):
+	s = str(len(adj)) + "\n"
+	for v,xs in adj.items():
+		s += str(v) + " " + " ".join(map(str, xs)) + "\n"
+	return s
 
 def adj_to_nx(adj):
 	G = nx.MultiDiGraph()

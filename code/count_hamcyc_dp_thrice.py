@@ -3,7 +3,7 @@ from parse_graph import parse_graph_to_adj
 
 def find_faces(adj: dict[int, list[int]]) -> list[list[(int, int)]]:
 	# assume planar graph
-	# assume clockwise or counterclockwise ordering
+	# assume clockwise ordering of neighbors
 	edges = set([(i, j) for i in adj for j in adj[i]])
 	faces = []
 	while len(edges) > 0:

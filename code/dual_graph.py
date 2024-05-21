@@ -17,13 +17,11 @@ def dual_graph(G: Graph) -> Graph:
 		edge_to_node[e] = next_nodeid
 		face = [e]
 		while True:
-			# print("face", face, list(map(lambda x: G.edge_to_vertexpair[x], face)))
 			u,v = G.edge_to_vertexpair[next_e]
 			idx = G.adj_edges[v].index(-next_e)
 			next_e = G.adj_edges[v][(idx-1)%len(G.adj_edges[v])]
 			if (next_e == e):
 				break
-			# print("next_e", next_e)
 			edges.remove(next_e)
 			face.append(next_e)
 			edge_to_node[next_e] = next_nodeid

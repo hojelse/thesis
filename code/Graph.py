@@ -19,9 +19,6 @@ class Graph:
 
 					next_edgeid += 1
 
-	def incident_edges(self, v: int) -> list[int]:
-		return self.adj_edges[v]
-
 	def V(self) -> list[int]:
 		return list(self.adj_edges.keys())
 	

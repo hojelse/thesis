@@ -1,16 +1,18 @@
 from Graph import Graph
 from parse_graph import adj_to_text, parse_text_to_adj
 
-def medial_graph(adj: dict[int, list[int]]) -> Graph:
-	es = set([tuple(sorted((i, j))) for i in adj for j in adj[i]])
+# assume planar graph
+# assume clockwise ordering of neighbors
+def medial_graph(G_adj: dict[int, list[int]]) -> Graph:
+	half_edges = set([tuple(sorted((i, j))) for i in G_adj for j in G_adj[i]])
 
-	vertexpair_to_node = dict([(e, i+1) for i,e in enumerate(es)])
-	node_to_vertexpair = dict([(i+1, e) for i,e in enumerate(es)])
+	vertexpair_to_node = dict([(e, i+1) for i,e in enumerate(half_edges)])
+	node_to_vertexpair = dict([(i+1, e) for i,e in enumerate(half_edges)])
 
-	medial = dict([(i+1, []) for i in range(len(es))])
+	medial = dict([(i+1, []) for i in range(len(half_edges))])
 
-	for v,xs in adj.items():
-		nodes = [vertexpair_to_node[tuple(sorted((v, x)))] for x in xs]
+	for u,vs in G_adj.items():
+		nodes = [vertexpair_to_node[tuple(sorted((u, v)))] for v in vs]
 		for i in range(len(nodes)):
 			medial[nodes[i]].append(nodes[(i-1)%len(nodes)])
 			medial[nodes[i]].append(nodes[(i+1)%len(nodes)])

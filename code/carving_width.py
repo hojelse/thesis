@@ -5,24 +5,10 @@ from parse_graph import adj_to_text, adj_to_text_2, parse_text_to_adj
 from dual_graph import dual_graph
 
 def carving_width(G: Graph) -> int:
-	# f = open(f"../graphs/g/8-5/quiet/_medial.in", "w")
-	# f.write(adj_to_text_2(G.adj()))
-	# f.close()
-
 	D, edge_to_link, link_to_edge, node_to_face, edge_to_node = dual_graph(G)
 
-	# blag = G.adj()
-	# for x,ys in D.adj().items():
-	# 	blag[x] = ys
-	# f = open(f"../graphs/g/8-5/quiet/_medial_dual.in", "w")
-	# f.write(adj_to_text_2(blag))
-	# f.close()
-
-	# print("node_to_face", node_to_face)
-	# print("node_to_face", [(k, list(map(lambda v: G.edge_to_vertexpair[v][0], vs))) for k,vs in node_to_face.items()])
-
 	# When the rat-catcher is on edge e, edge f is noisy iff there is
-	# a closed walk of at most length k containing e* and f* in G* .
+	# a closed walk of length scrictly less than k containing e* and f* in G* .
 	# Return the un-noisy subgraph.
 	def noisy_links(l: int, k: int) -> set[int]:
 		s,t = D.edge_to_vertexpair[l]
@@ -79,10 +65,6 @@ def carving_width(G: Graph) -> int:
 		for x,ys in D.adj().items():
 			blah[x] = ys
 
-		# f = open(f"../graphs/g/8-5/quiet/k{str(k)}e{G.edge_to_vertexpair[e]}.in", "w")
-		# f.write(adj_to_text_2(blah))
-		# f.close()
-
 		components = []
 		unseen = set(quiet_subgraph.keys())
 
@@ -116,11 +98,13 @@ def carving_width(G: Graph) -> int:
 		if max([len(G.N(v)) for v in G.V()]) >= k:
 			return True
 
+		# Set up the game states
 		edge_set = edge_to_link.keys()
 
 		Te = set([(e, tuple(C)) for e in edge_set for C in quiet_components(e, k)])
 		Sr = set([(r, v) for r in node_to_face.keys() for v in G.V()])
 
+		# Set up the losing states
 		losing_eC = set()
 		losing_rv = set()
 
@@ -131,6 +115,7 @@ def carving_width(G: Graph) -> int:
 		if len(Te) == len(losing_eC) or len(Sr) == len(losing_rv):
 			return False
 
+		# Play the game
 		while True:
 			new_deletion = False
 
@@ -139,7 +124,7 @@ def carving_width(G: Graph) -> int:
 					if (e, C) not in losing_eC:
 						new_deletion = True
 						losing_eC.add((e, C))
-			
+
 			for (e, C) in losing_eC:
 				r1 = edge_to_node[e]
 				r2 = edge_to_node[-e]
@@ -152,7 +137,7 @@ def carving_width(G: Graph) -> int:
 				return False
 			elif not new_deletion:
 				return True
-			
+
 	def binary_search_cw():
 		l = 0
 		r = 1
@@ -170,14 +155,14 @@ def carving_width(G: Graph) -> int:
 			else:
 				r = m - 1
 		return l
-	
+
 	def linear_search_cw():
 		k = 0
 		while rat_wins(k):
 			k += 1
 		return k - 1
 
-	cw = linear_search_cw()
+	cw = binary_search_cw()
 	return cw
 
 if __name__ == "__main__":
