@@ -127,13 +127,13 @@
 
 	The rat-catching algorithm decides $cw(M) \geq k$ with $k$ being in the positive integers. This is a monotonic boolean space, so you can perform a binary search to find the smallest $k$ where $cw(M) \geq k$ is true.
 
-	The rat-catching algorithm can be described as a game of two players, the rat and rat-catcher. Considering a graph $M$, the edges of a face can be thought of as walls of a room and vertices as the corners of some rooms. The rat moves from corner to corner along the walls and the rat-catcher moves from room to room through some wall. The rat-catcher can force the rat away from some walls by making noise. A round of this game is played with some noise-level $k$. The rat-catcher wins if they can force the rat to be in some wall of the room that they are in, with noise-level $k$, and the rat wins if there is a strategy whereby the rat can escape indefinitely.
+	The rat-catching algorithm can be described as a game of two players, the rat and rat-catcher. Considering a graph $M$, the edges of a face can be thought of as walls of a room and vertices as the corners of some rooms. The rat moves from corner to corner along the walls and the rat-catcher moves from room to room through some wall. The rat-catcher can force the rat away from some walls by making noise. A round of this game is played with some noise level $k$. The rat-catcher wins if they can force the rat to be in some wall of the room that they are in, with noise level $k$, and the rat wins if there is a strategy whereby the rat can escape indefinitely.
 
 	Additionally, if $\Delta(M) \geq k$ then the rat wins. The argument for why this is true is glossed over in \ref{BGZ15}. This is discussed in section \ref{}.
 
 	So assuming $\Delta(M) < k$ the game is played.
 
-	For some noise-level and location of the rat-catcher, exactly which edges are noisy and which are quiet is definitions \ref{def:edge-quiet} and \ref{def:face-quiet}.
+	For some noise level and location of the rat-catcher, exactly which edges are noisy and which are quiet are definitions \ref{def:edge-quiet} and \ref{def:face-quiet}.
 
 	An edge $e$ is called quiet iff. $e$ is not noisy.
 
@@ -145,12 +145,12 @@
 		When the rat-catcher is on some room $f$, then edge $e$ is noisy iff. there is a closed walk of length scrictly less than $k$ containing $f^*$ and $e^*$ in the dual $M^*$.
 	\end{definition}
 
-	A quiet subgraph $Q(M, k, e)$, for some graph $M$, some noise-level $k$ and some $e \in E(M)$, is a subgraph of $M$ with $V(Q(M, k, e)) = V(M)$ and
+	A quiet subgraph $Q(M, k, e)$, for some graph $M$, some noise level $k$ and some $e \in E(M)$, is a subgraph of $M$ with $V(Q(M, k, e)) = V(M)$ and
 
 	$E(Q(M, k, e)) = \{e_1 \mid$ every closed walk of $M^*$ containing $e_1^*$ and $e_2^*$ has length at least $k\}$
 
 	\begin{problem}\label{problem:noisy-subgraph}
-		Given a plane graph $M$ that might have parallel edges, an edge $e \in E(M)$, and noise-level $k \in \mathbb{N}$, output the quiet subgraph $Q(M, k, e)$.
+		Given a plane graph $M$ that might have parallel edges, an edge $e \in E(M)$, and noise level $k \in \mathbb{N}$, output the quiet subgraph $Q(M, k, e)$.
 	\end{problem}
 
 	Problem \ref{problem:noisy-subgraph} depends on a function for computing the dual of a graph. Computing a dual graph is problem \ref{problem:dual}.
@@ -177,7 +177,7 @@
 		Corollary \ref{def:dual_coro_loop} will be irrelevant for any implementation of the algorithm.
 	\end{claim}
 
-	The game states and possible moves, for some graph $M$ and some noise-level $k$, can be described as a graph $H(M, k)$.
+	The game states and possible moves, for some graph $M$ and some noise level $k$, can be described as a graph $H(M, k)$.
 
 	Let $F(M)$ be the set of faces of $M$.
 
@@ -286,7 +286,7 @@
 
 		Computing the quiet subgraph and the connected components thereof is done with a depth-first search approach.
 
-		The edges of the connected components are irrelevant for the rest of the algorithm, so only a list of vertices are returned for each connected component.
+		The edges of the connected components are irrelevant for the rest of the algorithm, so only a list of vertices is returned for each connected component.
 
 		\pyfile{carving_width.py}{10}{76}
 
