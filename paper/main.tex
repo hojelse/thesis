@@ -1,7 +1,7 @@
 \documentclass{article}
 \include{setup}
 
-\title{Implementation of an optimal branch-decomposition algorithm for planar graphs.}
+\title{Implementation of a minimal branch-decomposition algorithm for simple planar graphs.}
 \author{Kristoffer Højelse}
 \date{February 2024}
 
@@ -14,18 +14,43 @@
 \end{abstract}
 
 \section{Motivation}
-	Graph optimization problems may be solved efficiently for graphs of small branchwidth.
+	Some graph optimization problems can be solved efficiently for graphs of small branchwidth.\ref{}
+
+	\todo{which? counting hamiltonian cycles of planar cubic graphs}
 
 \section{Description of the problem}
-	A branch decomposition $B$ of a graph $G$ is a connected tree where every edge of $G$ is a leaf in $B$ and every internal vertex of $B$ has exactly 3 neighbors.
 
-	Removing any edge $e = \{u,v\}$ of $B$ partitions $B$ into 2 trees $B_u$ and $B_v$ and the intersection of the sets of vertices in the leaves of $B_u$ and $B_v$ is called a middle set and is associated with the edge $e$. Every edge of $B$ therefore, has an associated middle set. The maximal cardinality of any middle set among all middle sets of $B$ is the width of the branch decomposition $B$.
+	The main computational problem of this paper is \textsc{The Planar Minimal Branch Decomposition Problem}.
+
+	\begin{definition}
+		\textsc{The Planar Minimal Branch Decomposition Problem}
+
+		Input: Given a simple undirected connected planar graph $G$.
+
+		Output: A minimal branch decomposition of $G$.
+	\end{definition}
+
+	Here is some informal definitions to unpack the aforementioned properties of graphs.
+
+	A graph is called \textbf{simple} if and only if it has no parallel edges and no self-loops.
+
+	A graph is called \textbf{undirected} if and only if all its edges can be traversed in both directions.
+
+	A graph is called \textbf{connected} (or 1-vertex-connected) if and only if there exists a path between any two vertices.
+
+	A graph is called \textbf{planar} if and only if there is a way to draw the graph in 2 dimensions such that no pair of edges crosses.
+
+	A \textbf{branch decomposition} $B$ of a graph $G$ is a tree where every edge of $G$ is a leaf in $B$ and every internal vertex of $B$ has exactly 3 neighbors. $B$ is an unrooted binary tree.
+
+	Removing any edge $e = \{u,v\}$ of $B$ partitions $B$ into 2 trees $B_u$ and $B_v$ and the intersection of the sets of vertices in the leaves of $B_u$ and $B_v$ is called a middle set. Every edge of $B$ has an associated middle set. The maximal cardinality of any middle set among all middle sets of $B$ is the width of $B$.
 
 	There can be many branch decompositions of a graph $G$.
 
-	A minimal branch decomposition of $G$ is any branch decomposition of $G$ of minimal width among all branch decompositions of $G$.
+	A \textbf{minimal branch decomposition} of $G$ is any branch decomposition of $G$ of minimal width among all branch decompositions of $G$.
 
-	\begin{definition}
+	Without the contraint of planarity on the input graph, then it is NP-complete to determine whether a general graph $G$ has a branch decomposition of width at most $k$, when $G$ and $k$ are both considered as inputs to the problem.
+
+	\begin{definition}\label{def:mbdp}
 		\textsc{The Minimal Branch Decomposition Problem}
 
 		Input: Given a simple undirected connected graph $G$.
@@ -33,172 +58,264 @@
 		Output: A minimal branch decomposition of $G$.
 	\end{definition}
 
+	The algorithm described in this paper solves \textsc{The Planar Minimal Branch Decomposition Problem} which can be computed in polynomial time.
 
-\section{The domain}
-	The algorithm described in this paper solves \textsc{The Minimal Branch Decomposition Problem} with an additional constraint of the input graph being planar.
+	The width of a minimal branch decomposition of $G$ called the branch width of $G$.
 
-	Some informal definitions of the aforementioned properties of graphs:
-
-	\begin{enumerate}
-		\item A graph is called \textbf{simple} if and only if it has no parallel edges and no self-loops.
-		\item A graph is called \textbf{undirected} if and only if all its edges can be traversed in both directions.
-		\item A graph is called \textbf{connected} (or 1-vertex-connected) if and only if there exists a path between any two vertices.
-		\item A graph is called \textbf{planar} if and only if there is a way to draw the graph in 2 dimensions such that no pair of edges crosses.
-	\end{enumerate}
-
-	Different subroutines of the algorithm that take a graph as argument, assume different properties of the graph.
-
-	\subsection{Medial graph}
-		
-		A subroutine of the algorithm computes the medial graph of a graph from the class; simple connected planar cubic graphs.
-		
-		\begin{definition}
-			The medial graph $M(G)$ of a connected plane graph $G$ with a vertex $e^*$ for each edge $e$ of $G$ and for each face $f$ of $G$, there's an edge $c*$ between a pair of vertices $e_1*$, $e_2*$ of $M(G)$ if $e_1$ and $e_2$ are consecutive in $f$.
-		\end{definition}
-		
-		todo: argue that simple connected planar cubic graphs are a valid substitution for a connected plane.
-		
-		todo: identify a more succinct description of the class; medial of simple connected planar cubic graphs
-
-		An implementation of this subroutine can be found in the appendix \ref{appx:medial-graph}.
-
+\section{The algorithm}
+	This section describes the algorithm given by Seymour and Thomas\ref{} by indentifying a set of practical problems and subproblems and how they relate.
 	
-	\subsection{Dual graph}
+	Problem \ref{def:mbdp} is the overarching problem, that the algorithm solves, and can be broken down into many smaller subproblems.
+
+	Considering a graph $G$, you can compute a minimal branch decomposition of $G$ from a minimal carving decomposition of the medial of $G$, by replacing the vertices in leaves of the decomposition with edges, using the mapping between edges and vertices from computing the medial graph. \ref{} Therefore problem \ref{def:mbdp} break down into problems \ref{problem:mcd-to-mbd}, \ref{problem:medial} and \ref{problem:mcd}.
+
+	\begin{problem}\label{problem:mcd-to-mbd}
+		Given a minimal carving decomposition of a medial graph of $G$, output a minimal branch decomposition of $G$.
+	\end{problem}
+
+	\begin{problem}\label{problem:medial}
+		Given a graph $G$, output a medial graph and a bijectional mapping between medial nodes and vertex pairs.
+	\end{problem}
+
+	\begin{problem}\label{problem:mcd}
+		Given a plane graph $M$ and function to compute the carving width of a graph, output a minimal carving decomposition of $M$.
+	\end{problem}
+
+	Implementing a function to solve \ref{problem:mcd-to-mbd} is decribed in \ref{impl:mcd-to-mbd}.
+
+	To solve \ref{problem:medial} is a matter of following the definition.
+
+	I will refer to vertices and edges of the medial graph as "nodes" and "links" in an attempt of disambiguation. 
+
+	Informally; The medial graph is a graph where there is a node in the medial for each edge, and an edge between two nodes if their corresponding edges are consecutive in a face of the graph.
+
+	\begin{definition}
+		The medial graph $M(G)$ of a connected plane graph $G$ is a graph with a vertex $e^*$ for each edge $e$ of $G$ and for each face $f$ of $G$, there's an edge $d^*$ between a pair of vertices $e_1^*$, $e_2^*$ of $M(G)$ if $e_1$ and $e_2$ are consecutive in $f$.
+	\end{definition}
+
+	Computing a medial graph is described in \ref{impl:medial}.
+
+	To solve \ref{problem:mcd} \ref{} gives an contraction algorithm.
+
+	Doing a series of edge contractions (contraction of all edges between a pair of vertices) on a graph $M$, where the carving width does not increase until 3 vertices remain, then the series of contracted edges along with the three vertices can be assembled into a minimal carving decomposition of $M$.
 	
-		A subroutine of the algorithm computes the dual graph of a graph.
-		
-		\begin{definition}
-			The dual graph $G*$ of a planar graph $G$ is a graph with a vertex $f*$ for each face $f$ of $G$ and an edge $e^*$ for each edge $e$ that separates a face $f_1$ of $G$ and a face $f_2$ of $G$.
-		\end{definition}
-		
-		\begin{corollary}
-			If multiple edges separate $f_1$ and $f_2$ there will be multiple edges between $f_1*$ and $f_2*$.
-		\end{corollary}
-		
-		\begin{corollary}\label{def:dual_coro_loop}
-			If $e$ separates $f_1$ and $f_2$ and are the same face, $e^*$ will be a self-loop.
-		\end{corollary}
-		
-		For the algorithm in this paper, the class of graphs that will be given as input is medial graphs of simple undirected connected planar cubic graphs.
-		
-		I therefore claim, for now without any proof or argument, that; 
-		
-		\begin{claim}
-			Corollary \ref{def:dual_coro_loop} will be irrelevant for any implementation of the algorithm.
-		\end{claim}
-		
-		An implementation of this subroutine can be found in the appendix \ref{appx:dual-graph}.
-		
-	\subsection{Edge contraction}
+	I will defer describing exactly how to assemble a minimal carving decomposition to \ref{impl:mcd}.
 
-		A subroutine of the algorithm computes the resulting graph from an edge contraction.
+	The contraction algorithm depends on a function to compute a contraction and a function to compute the carving width. This is problems \ref{problem:contraction} and \ref{problem:cw}.
 
-		This operation is a bit different from the conventional understanding of an edge contraction.
-
-		\begin{definition}
-			Edge contraction.
-
-			Given an undirected Graph $G=\{V,E\}$ with no self-loops and pair of vertices $u,v \in V$ such that $\{u,v\} \in E$, remove all edges between $u$ and $v$ and update every edge $\{v,w\} \in E$ to be $\{u,w\}$.
-		\end{definition}
-
-		The resulting graph might have parallel edges but will not have self-loops.
-
-\section{Description of the algorithm}
-
-	The algorithm computes a minimal branch decomposition of a simple connected planar graph $G$, the width of this branch decomposition is the branch width of $G$. This section describes a high-level set of problems for the algorithm to tackle.
-
-	\begin{problem}\label{desc:mbd}
-		Given a simple connected planar graph $G$, output a minimal branch decomposition of $G$.
+	\begin{problem}\label{problem:contraction}
+		Given a graph $M$ that might have parallel edges, output a graph resulting from a contraction of all edges between a pair of vertices.
 	\end{problem}
 
-	Problem \ref{desc:mbd} is the overarching problem, that the algorithm solves, and can be broken down into many smaller subproblems.
-
-	For the first large step in the algorithm, we use the fact that a minimal carving decomposition of the medial of a graph $G$ can be translated into a minimal branch decomposition of $G$, by replacing the vertices in leaves of the decompositions with edges, using the mapping between edges and vertices from computing the medial graph.
-
-	The argument for why this is true can be found in \ref{}.
-
-	\begin{problem}
-		Given a graph $G$ and a minimal carving decomposition of a medial graph of $G$, output a minimal branch decomposition of $G$.
+	\begin{problem}\label{problem:cw}
+		Given a plane graph $M$ that might have parallel edges, output the carving width of $M$.
 	\end{problem}
 
-	For both branch- and carving-decompositions, I have chosen a data structure of tuples of tuples or integers. This has a straightforward translation to the Newick tree format, a concise notation for tree structures.
+	First consider problem \ref{problem:contraction}.
 
-	To then solve the above-mentioned problem, the implementation recursively returns a copy of any tuple, but returns a tuple of integers for any integer, using the mapping from medial node to vertex pair.
+	Informally; a contraction is merging two vertices into one and letting incident edges connect to the new vertex. The contraction in this paper differs a bit from conventional definitions of an edge- and vertex-contractions, as other definitions might result in self-loops when contracting one of multiple parallel edges.
 
-	\pyfile{branch_decomposition.py}
+	\begin{definition}
+		Contraction.
 
-	\begin{problem}
-		Given a graph $G$, output a medial graph and a mapping from medial nodes to vertex pairs.
+		Given an undirected Graph $G=\{V,E\}$ with no self-loops and pair of vertices $u,v \in V$ such that $\{u,v\} \in E$, remove all edges between $u$ and $v$ and update every edge $\{v,w\} \in E$ to be $\{u,w\}$.
+	\end{definition}
+
+	Computing a medial graph is described in \ref{impl:medial}.
+
+	Now consider problem \ref{problem:cw}.
+
+	The rat-catching algorithm decides $cw(M) \geq k$ with $k$ being in the positive integers. This is a monotonic boolean space, so you can perform a binary search to find the smallest $k$ where $cw(M) \geq k$ is true.
+
+	The rat-catching algorithm can be described as a game of two players, the rat and rat-catcher. Considering a graph $M$, the edges of a face can be thought of as walls of a room and vertices as the corner of some rooms. The rat moves from corner to corner along the walls and the rat-catcher moves from room to room through some wall. The rat-catcher can force the rat away from some walls by making noise. A round of this game is played with some noise-level $k$. The rat-catcher wins if they can force the rat to be in some wall of the room that they are in, with noise-level $k$, and the rat wins if there is a strategy whereby the rat can escape indefinitely.
+
+	Additionally, if $\Delta(M) \geq k$ then the rat wins, the argument for why is this is true is glossed over in \ref{BGZ15}. This is discussed in section \ref{}.
+
+	So assuming $\Delta(M) < k$ the game is played.
+
+	For some noise-level and location of the rat-catcher, exactly which edges are noisy and which are quiet, is definitions \ref{def:edge-quiet} and \ref{def:face-quiet}.
+
+	An edge $e$ is called quiet iff. $e$ is not noisy.
+
+	\begin{definition}\label{def:edge-quiet}
+		When the rat-catcher is on some edge $e_1$, then edge $e_2$ is noisy iff. there is a closed walk of length scrictly less than $k$ containing $e_1^*$ and $e_2^*$ in the dual $M^*$.
+	\end{definition}
+
+	\begin{definition}\label{def:face-quiet}
+		When the rat-catcher is on some room $f$, then edge $e$ is noisy iff. there is a closed walk of length scrictly less than $k$ containing $f^*$ and $e^*$ in the dual $M^*$.
+	\end{definition}
+
+	A quiet subgraph $Q(M, k, e)$, for some graph $M$, some noise-level $k$ and some $e \in E(M)$, is a subgraph of $M$ with $V(Q(M, k, e)) = V(M)$ and
+
+	$E(Q(M, k, e)) = \{e_1 \mid$ every closed walk of $M^*$ containing $e_1^*$ and $e_2^*$ has length at least $k\}$
+
+	\begin{problem}\label{problem:noisy-subgraph}
+		Given a plane graph $M$ that might have parallel edges, an edge $e \in E(M)$, and noise-level $k \in \mathbb{N}$, output the quiet subgraph $Q(M, k, e)$.
 	\end{problem}
 
-	The medial graph $M$ of $G$ is a graph where there is a node in $M$ for each edge in $G$, and an edge between two nodes if their edges are consecutive in a face of $G$.
+	Problem \ref{problem:noisy-subgraph} depends on a function for computing the dual of a graph. Computing a dual graph is problem \ref{problem:dual}.
 
-	Therefore if you assume that the adjacency list of $G$ is given such that the neighborhoods are given in clockwise ordering according to some plane embedding of $G$ then a pair of consecutive nodes in a neighborhood are also consecutive edges in some face of $G$.
+	\begin{problem}\label{problem:dual}
+		Given a plane graph $M = \{V, E\}$ that might have parallel edges, output the dual of $M$.
+	\end{problem}
 
-	\pyfile{medial_graph.py}
+	\begin{definition}
+		The dual graph $M^*$ of a plane graph $M$ is a graph where a face $f$ of $M$ is a vertex $f^*$ of $M^*$ and an edge $e$ that separates two faces $f_1$,$f_2$ of $M$ is an edge $e^*$ of $M^*$ between $f_1^*$ and $f_2^*$.
+	\end{definition}
+	
+	\begin{corollary}
+		If multiple edges separate $f_1$ and $f_2$ there will be parallel edges between $f_1*$ and $f_2*$.
+	\end{corollary}
+	
+	\begin{corollary}\label{def:dual_coro_loop}
+		If the same face is on both sides of $e$, then $e^*$ will be a self-loop.
+	\end{corollary}
+
+	For the algorithm in this paper, the class of graphs that will be given as input is medial graphs of simple undirected connected planar graphs. Therefore I claim \ref{claim:irri}.
+
+	\begin{claim}\label{claim:irri}
+		Corollary \ref{def:dual_coro_loop} will be irrelevant for any implementation of the algorithm.
+	\end{claim}
+
+	The game states and possible moves, for some graph $M$ and some noise-level $k$, can be described as a graph $H(M, k)$.
+
+	Let $F(M)$ be the set of faces of $M$.
+
+	Let $S$ be every possible state when the rat-catcher is in a face some of which might be losing states. $S = \{ (f, v) \mid v \in V(M) \land f$ is a face of $ M \}$.
+
+	Let $T$ be every possible state when the rat-catcher is on an edge. $T = \{ (e, C) \mid e \in E(M) \land C$ is a connected component of $Q(M, k, e) \}$.
+
+	Computing the quiet subgraph requires the dual graph. 
+	
+	With the graph $H$, the only missing peace of the rat-catching algorithm is how to determine the outcome.
+
+	You can mark states of the graph $H$ that are losing states, and then repeatedly mark any state that leads to a losing state, until either every state is marked or no more states can be marked. If every state is marked then the rat-catcher wins, otherwise the rat wins.
+
+\section{The implementation}
 
 	For the upcoming problems one needs to deal with parallel edges and be able to tell them apart, therefore the implementation uses a data structure that encapsulates an adjacency list of edges and a map from unique edge ids its vertexpair.
 
 	I have chosen to assign IDs such that if one halfedge has ID $i$ then the other halfedge has ID $-i$, therefore the absolute value $|i|$ uniquely identifies an undirected edge.
 
-	\pyfile{graph.py}
+	\pyfile{graph.py}{0}{100}
 
-	Doing a series of edge contractions (contraction of all edges between a pair of vertices) on a graph $M$, where the carving width does not increase until 3 vertices remain, then the series of contracted edges along with the three vertices can be reassembled into a minimal carving decomposition of $M$.
+	\subsection{Computing a minimal branch decomposition}\label{impl:mcd-to-mbd}
+		
+		Solving problem \ref{problem:mcd-to-mbd}.
 
-	The argument for why this is true can be found in \ref{}.
+		For both branch- and carving-decompositions, I have chosen a data structure of tuples of tuples or integers. This has a straightforward translation to the Newick tree format, a concise notation for tree structures.
 
-	\begin{problem}
-		Given a graph $G$ that might have parallel edges, output a graph resulting from a contraction of all edges between a pair of vertices, preserving clockwise ordering.
-	\end{problem}
+		To then solve the above-mentioned problem, the implementation recursively returns a copy of any tuple, but returns a tuple of integers for any integer, using the mapping from medial node to vertex pair.
 
-	As the resulting graph is later given as an argument to functions assuming a clockwise ordering of vertices, the implementation needs to preserve this invariant when contracting.
+		\pyfile{branch_decomposition.py}{5}{19}
+		
+	\subsection{Computing a medial graph}\label{impl:medial}
+		
+		Solving problem \ref{problem:medial}.
 
-	As the contraction is a contraction of ALL edges between a pair of vertices, the resulting graph will not exhibit any self-loops. I suspect reconciling this and the ordering invariant could be difficult, but luckily in this context, it is irrelevant.
+		I assume that the input graph $G$ is a planar graph given as an adjacency list such that the neighborhoods are given in clockwise ordering according to some plane embedding of $G$.
+		
+		Given this format, any two consecutive edges $e_1$ and $e_2$ in some face of $G$ are therefore consecutive vertices in the neighborhood of the vertex that $e_1$ and $e_2$ share.
 
-	For a contraction of vertices $a$ and $b$, I have chosen to create a new vertex ID $c$ instead of reusing $a$ or $b$ as this later makes assembling the carving decomposition easier.
+		The implementation adds all medial links around some vertex for each vertex in $G$. 
+		
+		The clockwise ordering of neighborhoods of $G$ becomes counterclockwise orderings of neighborhoods of the medial $M$. The medial graph of a plane graph is 4-regular \ref{}. From the perpective of some medial node $v$, in some single iteration of the loop on line 14, two links are added to the neighborhood of $v$ in counterclockwise ordering, and latere the two links added to the neighborhood of $v$ also in counterclockwise ordering.
 
-	Creating the neighborhood of $c$ from the neighborhoods of $a$ and $b$ is done by finding the first edge that the adjacency lists of $a$ and $b$ have in common, and then "rotating" the adjacency lists such that a concatenation of the lists preserve the ordering. This is where telling apart parallel edges is very useful.
+		\pyfile{medial_graph.py}{4}{22}
+	
+	\subsection{Computing a minimal carving decomposition}\label{impl:mcd}
 
-	\pyfile{contraction.py}
+		Solving problem \ref{problem:mcd}.
 
-	I will defer describing how to compute the carving width and focus on the following problem for now.
+		The implementation finds a nonincreasing contraction by doing a linear search over every edge. No consideration has yet been given to any potential clever orderings of the edges that might improve the running time.
 
-	\begin{problem}
-		Given a graph $G$ and function to compute the carving width of a graph, output a minimal carving decomposition of $G$.
-	\end{problem}
+		The sequence of contracted edges is found and reassembled into a minimal carving decomposition.
 
-	The implementation finds a nonincreasing contraction by doing a linear search over every edge. No consideration has yet been given to any potential clever orderings of the edges that might improve the running time.
+		The "contraction" function returns a new unique vertex ID, therefore by saving which vertex is a contraction of which vertex pair in the "edges" dictionary, contructing the decomposition is then a matter of recursively expanding any vertices that was a result of a contraction into a tuple of the vertex pair that is was composed of. Repeating this until all only vertices of $M$ remain gives a carving decomposition in newick-like nested tuple format.
 
-	The sequence of contracted edges is found and reassembled into a minimal carving decomposition.
+		\pyfile{carving_decomposition.py}{8}{48}
 
-	\pyfile{carving_decomposition.py}
+	\subsection{Contraction}\label{impl:contraction}
 
-	\begin{problem}
-		Given a graph $M$ that might have parallel edges, output the carving width of $M$.
-	\end{problem}
+		Solving problem \ref{problem:contraction}.
 
-	The rat-catching algorithm decides $cw(M) \geq k$ with $k$ being in the positive integers. This is a monotonic boolean space, so you can perform a binary search to find the smallest $k$ where $cw(M) \geq k$ is true.
+		As the resulting graph is later given as an argument to functions assuming a clockwise or counterclockwise ordering of vertices, the implementation needs to preserve this invariant when contracting.
 
-	The proposition $cw(M) \geq k$ is true if and only if $\Delta(M) \geq k$ or the rat can evade the rat-catcher indefinitely, with noise-level $k$, in a particular game based on $M$.
+		As this contraction is a contraction of ALL edges between a pair of vertices, the resulting graph will not exhibit any self-loops. I suspect reconciling this and the ordering invariant could be difficult, but luckily in this context, it is irrelevant.
 
-	\pyfile{carving_width.py}
+		For a contraction of vertices $a$ and $b$, I have chosen to create a new vertex ID $c$ instead of reusing $a$ or $b$ as this later makes assembling the carving decomposition easier.
 
-	\begin{problem}
-		Given a graph $G$ that might have parallel edges, output the dual of $G$.
-	\end{problem}
+		First update any edges incident to either $a$ or $b$. Then creating the neighboorhood of the new vertex $c$ from the contraction of vertices $a$ and $b$, is done by firstly finding any shared edge $e$. In this implementation the first shared edge $e$ in the neighborhood of $a$. This edge has some ID $e$ and the other halfedge with ID $-e$ will therefore be in the neighborhood of $b$. Now  "rotating" the neighborhoods of $a$ and $b$ such edge $e$ and $-e$ is at index 0 in both lists means that a concatenation of the lists will preserve the ordering around the new vertex $c$. And finally remove any edges between $a$ and $b$.
+		
+		This is where telling apart parallel edges, which the Graph class allows, becomes very useful. Infering where to stitch together the neighborhoods to preserve the ordering, just from a normal adjacency list, becomes a way harder problem.
+
+		\pyfile{contraction.py}{4}{49}
+
+	\subsection{Carving width and the rat cathing algorithm}\label{impl:cw}
+
+		Solving problem \ref{problem:cw}
+
+		The vertices of game state graph $H$ is initialized by computing the elements of $T$ and $S$, while edges of $H$ are not explicitly kept in any datastructure, but instead checked while playing the game.
+
+		Losing states - the tuples $(f,v) \in S$ where $v \in f$ - are marked as losing.
+
+		The outcome of the game is computed by marking states as losing.
+		
+		Considering a tuple $(e, C) \in T$, if all $(f, v)$ where $v \in V(C)$ is losing then $(e, C)$ is losing.
+
+		Considering a tuple $(f, v)$, if there exists a tuple $(e, C)$ which is losing where $e \in f$ and $v \in V(C)$ then $(f, v)$ is losing.
+
+		\pyfile{carving_width.py}{7}{9}
+		\pyfile{carving_width.py}{78}{130}
+
+	\subsection{Quiet subgraph}\label{impl:quiet}
+
+		Solving problem \ref{problem:noisy-subgraph}.
+
+		Using definition \ref{def:edge-quiet}: When the rat-catcher is on some edge $e_1$, then edge $e_2$ is noisy iff. there is a closed walk of length scrictly less than $k$ containing $e_1^*$ and $e_2^*$ in the dual $M^*$.
+
+		Let $s_1$ and $t_1$ be the vertexpair for the link $e_1^*$ and let $s_2$ and $t_2$ be the vertexpair for the link $e_2^*$.
+
+		\begin{claim}
+			The shortest closed walk that includes both $e_1^*$ and $e_2^*$ has the same length as either $$d(s_1, s_2) + d(t_1, t_2) + 2$$ or $$d(s_1, t_1) + d(s_2, t_2) + 2$$. Where $d(u, v)$ is the length of the shortest path from $u$ to $v$.
+		\end{claim}
+
+		The single source shortest distances can then be computed using a breadth-first approach.
+
+		Using the mapping from links of the dual to edges, and the fact that an edge $e$ is called quiet iff. $e$ is not noisy, the quiet edges can be obtained in the natural way.
+
+		Computing the quiet subgraph and the connected components thereof is done with a depth-first search approach.
+
+		The edges of the connected components are irrelevant for the rest of the algorithm, so only a list of vertices are returned for each connected component.
+
+		\pyfile{carving_width.py}{10}{76}
+
+	\subsection{Dual graph}\label{impl:dual}
+
+		Solving problem \ref{problem:dual}
+
+		No other path of the implementation need the assumption that the dual is planar, therefore no clockwise or counterclockwise ordering of the neighborhoods of the adjacency list is needed.
+
+		The dual has a vertex for each face of the input graph. The faces are found by selecting an unmarked halfedge, and then marking all the edges of the face it belongs to, by following the edges which are just next to eachother in the ordered neighborhoods.
+
+		The next halfedge $e_{i+1}$ after the current halfedge $e_i = \{u, v\}$ is the edge just before $-e_i$ in the ordered neighborhood around $v$.
+
+		\pyfile{dual_graph.py}{21}{22}
+
+		\pyfile{dual_graph.py}{4}{50}
+
 \section{Appendix.}
-
-	\subsection{Count Hamiltonian Cycles with Brute Force}
-		\label{appx:count-hamcyc-brute-force}
-		\pyfile{count_hamcyc_brute_force.py}
-
-	\subsection{Medial graph}
-		\label{appx:medial-graph}
-		\pyfile{medial_graph.py}
-
-	\subsection{Dual graph}
-		\label{appx:dual-graph}
-		\pyfile{dual_graph.py}
-
-
+	\pyfile{branch_decomposition.py}{0}{1000}
+	\pyfile{branch_width_brute_force.py}{0}{1000}	
+	\pyfile{branch_width.py}{0}{1000}
+	\pyfile{carving_decomposition.py}{0}{1000}
+	\pyfile{carving_width_brute_force.py}{0}{1000}
+	\pyfile{carving_width.py}{0}{1000}
+	\pyfile{contraction.py}{0}{1000}
+	\pyfile{dual_graph.py}{0}{1000}
+	\pyfile{Graph.py}{0}{1000}
+	\pyfile{medial_graph.py}{0}{1000}
+	\pyfile{parse_graph.py}{0}{1000}
+	\pyfile{parse_newick.py}{0}{1000}
+	
 \end{document}

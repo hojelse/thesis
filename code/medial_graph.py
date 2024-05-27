@@ -4,12 +4,12 @@ from parse_graph import adj_to_text, parse_text_to_adj
 # assume planar graph
 # assume clockwise ordering of neighbors
 def medial_graph(G_adj: dict[int, list[int]]) -> Graph:
-	half_edges = set([tuple(sorted((i, j))) for i in G_adj for j in G_adj[i]])
+	vertexpairs = set([tuple(sorted((i, j))) for i in G_adj for j in G_adj[i]])
 
-	vertexpair_to_node = dict([(e, i+1) for i,e in enumerate(half_edges)])
-	node_to_vertexpair = dict([(i+1, e) for i,e in enumerate(half_edges)])
+	vertexpair_to_node = dict([(e, i+1) for i,e in enumerate(vertexpairs)])
+	node_to_vertexpair = dict([(i+1, e) for i,e in enumerate(vertexpairs)])
 
-	medial = dict([(i+1, []) for i in range(len(half_edges))])
+	medial = dict([(i+1, []) for i in range(len(vertexpairs))])
 
 	for u,vs in G_adj.items():
 		nodes = [vertexpair_to_node[tuple(sorted((u, v)))] for v in vs]

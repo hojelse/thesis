@@ -1,12 +1,6 @@
 from Graph import Graph
 from parse_graph import adj_to_text, parse_text_to_adj
 
-def index_of_first(lst, pred):
-	for i, v in enumerate(lst):
-		if pred(v):
-			return i
-	return None
-
 # assume G might have parallel edges
 # assume G do not have self-loops
 # assume adjacency list of G has clockwise ordering of neighbors
@@ -27,7 +21,14 @@ def contraction(G: Graph, a: int, b: int) -> Graph:
 			G1.edge_to_vertexpair[e] = (u, c)
 
 	# create neighborhood of c
-	first_shared_edge = G1.adj_edges[a][index_of_first(G1.adj_edges[a], lambda e: G1.edge_to_vertexpair[e][0] == c and G1.edge_to_vertexpair[e][1] == c)]
+	def index_of_first(lst, pred):
+		for i, v in enumerate(lst):
+			if pred(v):
+				return i
+		return None
+
+	index_of_first_shared_edge = index_of_first(G1.adj_edges[a], lambda e: G1.edge_to_vertexpair[e][0] == c and G1.edge_to_vertexpair[e][1] == c)
+	first_shared_edge = G1.adj_edges[a][index_of_first_shared_edge]
 
 	idx1 = G1.adj_edges[a].index(first_shared_edge)
 	rotated_Ga = G1.adj_edges[a][idx1:] + G1.adj_edges[a][:idx1]

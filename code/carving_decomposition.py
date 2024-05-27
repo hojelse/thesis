@@ -6,7 +6,7 @@ from medial_graph import medial_graph
 from Graph import Graph
 
 # Find a contraction that does not increase the carving width
-def nonincreasing_cw_contraction(G: Graph, cw1):
+def nonincreasing_cw_contraction(G: Graph, cw1: int) -> tuple:
 	for es in G.E():
 		u, v = G.edge_to_vertexpair[es]
 		G2, w = contraction(G, u, v)
@@ -23,11 +23,11 @@ def gradient_descent_contractions(G: Graph) -> Graph:
 	cw1 = carving_width(G)
 	edges = dict()
 	while True:
-		G3, e, cw2, w = nonincreasing_cw_contraction(G2, cw1)
+		G3, uv, cw2, w = nonincreasing_cw_contraction(G2, cw1)
 		if G3 is not None and len(G3.V()) >= 3:
 			G2 = G3
 			cw1 = cw2
-			edges[w] = e
+			edges[w] = uv
 		if len(G2.V()) == 3:
 			return G2, edges
 

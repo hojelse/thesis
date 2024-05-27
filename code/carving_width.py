@@ -7,9 +7,9 @@ from dual_graph import dual_graph
 def carving_width(G: Graph) -> int:
 	D, edge_to_link, link_to_edge, node_to_face, edge_to_node = dual_graph(G)
 
-	# When the rat-catcher is on edge e, edge f is noisy iff there is
-	# a closed walk of length scrictly less than k containing e* and f* in G* .
-	# Return the un-noisy subgraph.
+	# If the rat-catcher is on edge e1, then edge e2 is noisy iff there is
+	# a closed walk of length scrictly less than k containing e1* and e2* in the dual G*.
+
 	def noisy_links(l: int, k: int) -> set[int]:
 		s,t = D.edge_to_vertexpair[l]
 		links = link_to_edge.keys()
@@ -56,15 +56,6 @@ def carving_width(G: Graph) -> int:
 			quiet_subgraph[u].append(e1)
 			quiet_subgraph[v].append(-e1)
 
-		blah = {v: [] for v in G.V()}
-		for e1 in edges:
-			u,v = G.edge_to_vertexpair[e1]
-			blah[u].append(v)
-			blah[v].append(u)
-
-		for x,ys in D.adj().items():
-			blah[x] = ys
-
 		components = []
 		unseen = set(quiet_subgraph.keys())
 
@@ -99,41 +90,41 @@ def carving_width(G: Graph) -> int:
 			return True
 
 		# Set up the game states
-		edge_set = edge_to_link.keys()
+		halfedges = edge_to_link.keys()
 
-		Te = set([(e, tuple(C)) for e in edge_set for C in quiet_components(e, k)])
-		Sr = set([(r, v) for r in node_to_face.keys() for v in G.V()])
+		T = set([(e, tuple(C)) for e in halfedges for C in quiet_components(e, k)])
+		S = set([(f, v) for f in node_to_face.keys() for v in G.V()])
 
 		# Set up the losing states
-		losing_eC = set()
-		losing_rv = set()
+		losing_T = set()
+		losing_S = set()
 
-		for (r, v) in Sr:
-			if v in flatten([G.edge_to_vertexpair[e] for e in node_to_face[r]]):
-				losing_rv.add((r,v))
+		for (f, v) in S:
+			if v in flatten([G.edge_to_vertexpair[e] for e in node_to_face[f]]):
+				losing_S.add((f,v))
 
-		if len(Te) == len(losing_eC) or len(Sr) == len(losing_rv):
+		if len(T) == len(losing_T) or len(S) == len(losing_S):
 			return False
 
 		# Play the game
 		while True:
 			new_deletion = False
 
-			for (e, C) in Te:
-				if all([(edge_to_node[e], v) in losing_rv for v in C]):
-					if (e, C) not in losing_eC:
+			for (e, C) in T:
+				if all([(edge_to_node[e], v) in losing_S for v in C]):
+					if (e, C) not in losing_T:
 						new_deletion = True
-						losing_eC.add((e, C))
+						losing_T.add((e, C))
 
-			for (e, C) in losing_eC:
-				r1 = edge_to_node[e]
-				r2 = edge_to_node[-e]
-				for (r, v) in [(r1, v) for v in C] + [(r2, v) for v in C]:
-					if (r, v) not in losing_rv:
+			for (e, C) in losing_T:
+				f1 = edge_to_node[e]
+				f2 = edge_to_node[-e]
+				for (f, v) in [(f1, v) for v in C] + [(f2, v) for v in C]:
+					if (f, v) not in losing_S:
 						new_deletion = True
-						losing_rv.add((r, v))
+						losing_S.add((f, v))
 
-			if len(Te) == len(losing_eC) or len(Sr) == len(losing_rv):
+			if len(T) == len(losing_T) or len(S) == len(losing_S):
 				return False
 			elif not new_deletion:
 				return True

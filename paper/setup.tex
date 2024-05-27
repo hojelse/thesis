@@ -8,7 +8,7 @@
 	\usepackage{hyperref} % Add the hyperref package for clickable links
 	\newcommand\bigO{\mathrm{O}}
 	\usepackage[T1]{fontenc}
-
+	\usepackage{amsfonts}
 
 % Define the theorem-like environments
 	% Define a new theorem style with upright text
@@ -75,11 +75,13 @@
 		breaklines,
 		breakanywhere,
 	}
-	\newcommand{\pyfile}[1]{%
+	\newcommand{\pyfile}[3]{%
 		\textsf{%
 			\detokenize{#1}%
 		}%
 		\par
-		\inputminted{py}{../code/\detokenize{#1}}%
+		\inputminted[firstline=#2,lastline=#3]{py}{../code/\detokenize{#1}}%
 	}
+
+\newcommand{\todo}[1]{\textcolor{red}{#1}}
 
