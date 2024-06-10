@@ -1,8 +1,6 @@
 from carving_width import carving_width
 from contraction import contraction
 from parse_graph import parse_text_to_adj, adj_to_text
-from dual_graph import dual_graph
-from medial_graph import medial_graph
 from Graph import Graph
 
 # Find a contraction that does not increase the carving width
