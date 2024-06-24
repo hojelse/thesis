@@ -1,15 +1,17 @@
 from Graph import Graph
 from parse_graph import adj_to_text, parse_text_to_adj
 
+# Assume G is a rotation system
 def dual_graph(G: Graph) -> Graph:
 	edges = [e for e in G.E()]
 
 	D = Graph()
 	edge_to_link = dict()
 	link_to_edge = dict()
-	node_to_face = dict()
-	edge_to_node = dict()
+	node_to_face = dict() # nodeid to edgeid list
+	edge_to_node = dict() # half-edge to the faceid/node to its either left/right
 
+	# Find faces
 	next_nodeid = -1
 	while edges:
 		e = edges.pop()
@@ -31,6 +33,7 @@ def dual_graph(G: Graph) -> Graph:
 	for i in node_to_face.keys():
 		D.adj_edges[i] = []
 
+	# Add edges to dual graph
 	next_linkid = 1
 	for i,f1 in node_to_face.items():
 		for j,f2 in node_to_face.items():
@@ -46,6 +49,9 @@ def dual_graph(G: Graph) -> Graph:
 					D.adj_edges[i].append(next_linkid)
 					D.adj_edges[j].append(-next_linkid)
 					next_linkid += 1
+
+	# todo make edge_to_link and link_to_edge redundant
+	# by nameing edges and links the same
 
 	return D, edge_to_link, link_to_edge, node_to_face, edge_to_node
 

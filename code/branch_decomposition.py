@@ -9,7 +9,6 @@ def branch_decomposition(G_adj: dict[int, list[int]]):
 	cd = carving_decomposition(M)
 
 	# Convert the carving decomposition of M to a branch decomposition of G
-
 	def decomp(t):
 		if isinstance(t, int):
 			return node_to_vertexpair[t]

@@ -2,7 +2,7 @@ from Graph import Graph
 from parse_graph import adj_to_text, parse_text_to_adj
 
 # assume planar graph
-# assume clockwise ordering of neighbors
+# assume G_adj is a rotation system
 def medial_graph(G_adj: dict[int, list[int]]) -> Graph:
 	vertexpairs = set([tuple(sorted((i, j))) for i in G_adj for j in G_adj[i]])
 
