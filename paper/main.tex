@@ -31,63 +31,145 @@
 
 \section{Preliminaries}
 
-	A \textit{graph} $G$ is a 3-tuple $G = (V, E, \psi)$ consisting of a vertex set $V$, an edge set $E$ and a function $\psi$, where $V \subset \mathbb{N}^+$ and where $E \subset \mathbb{N}^+$ and where $\psi \st E \to \{\{u,v\} \st u,v \in V \land u \neq v \}$.
+	A \textit{graph} $G$ consists of a vertex set $V(G)$, and an edge set $\mathbb{E}(G)$ and a function $\phi_G$, where $V(G) \subset \mathbb{N}^+$ and where $\mathbb{E}(G) \subset \mathbb{N}^+$ and where $\phi_G \st \mathbb{E}(G) \to \{\{u,v\} \st u,v \in V(G)\}$.
+	
+	\textbf{Note.} Other authors might instead call this definition an undirected labelled pseudograph, with edges having own identity.
+	
+	\textbf{Note.} Regarding notation, $V$ and $\mathbb{E}$ are operations on graphs returning the vertex set and edge set respectively.
 
-	\textit{Note that other authors might instead name this an Undirected Labelled Multigraph (not permitting self-loops) (edges having own identity).}
+	A \textit{drawing} of a graph $G$ is a node-link diagram in which the vertices are represented as disks and the edges are represented as line segments or curves in the Euclidean plane.
 
-	A graph $G$ is \textit{simple}, if it has no parallel edges; $\neg \exists e_1,e_2 \in E_G$ where $e_1 \neq e_2$ such that $\psi_G(e_1) = \psi_G(e_1)$.
+	Here is a drawing of a graph $G$.
 
-	A \textit{subgraph} $H$ of a graph $G$, is a graph where some vertices and edges might be missing; a graph where $V_H \subseteq V_G$ and where $E_H \subseteq E_G$ and where $\psi_H$ is a subfunction of $\psi_G$; if $e \in E_H$ then $\psi_H(e) = \psi_G(e)$.
+	\begin{center}
+		\input{images/unlabeled-graph.tex}
+	\end{center}
 
-	A graph is \textit{connected} if there exists a path connecting any two vertices.
+	Here is a labeled drawing of the same graph $G$ and its function $\phi_G$.
+
+	\begin{center}
+		\input{images/graph.tex}
+	\end{center}
+
+	Let $E(G)$ return a multiset of all vertex-pairs of $G$; in other words, $E(G) = \{\phi_G(e) \st e \in \mathbb{E}(G)\}$.
+
+	A edge $e$ where $\phi_G(e) = \{u,v\}$, is a \textit{self-loop}, if $u = v$.
+
+	A graph $G$ is \textit{loop-less}, if no edge $e \in \mathbb{E}(G)$ is a self-loop.
+
+	A \textit{multi-graph} is a graph that is loop-less.
+
+	\begin{center}
+		\input{images/multigraph.tex}
+	\end{center}
+
+	A multi-graph $G$ is \textit{simple}, if it has no parallel edges; in other words, if elements of $E(G)$ are pair-wise distinct.
+
+	\begin{center}
+		\input{images/simple-graph.tex}
+	\end{center}
+
+	A \textit{subgraph} $H$ of a graph $G$, is a graph where some vertices and edges might be missing; in other words, is a graph where $V(H) \subseteq V(G)$ and where $\mathbb{E}(H) \subseteq \mathbb{E}(G)$ and where $\forall e \in \mathbb{E}(H), \phi_H(e) = \phi_G(e)$.
+
+	\begin{center}
+		\input{images/subgraph.tex}
+	\end{center}
+
+	For $A \subseteq V(G)$, we denote by $G[A]$ the subgraph induced by the subset of vertices $A$; in other words, $G[A]$ is the subgraph where $V(G[A]) = A$ and where $\mathbb{E}(G[A]) = \{ e \st e \in \mathbb{E}(G) \land |\phi_G(e) \cap A| = 2\}$ and where $\forall e \in E(G[A]), \phi_{G[A]}(e) = \phi_{G}(e)$.
+
+	\begin{center}
+		\input{images/induced-subgraph.tex}
+	\end{center}
+
+	A vertex $v \in V(G)$ and an edge $e \in \mathbb{E}(G)$ are \textit{incident} to each other, if $v \in \phi_G(e)$. Furthermore, two distinct edges $e_1,e_2 \in \mathbb{E}(G)$ are incident to each other, if $\phi_G(e_1) \cap \phi_G(e_2) \neq \emptyset$.
+
+	The \textit{degree} of a vertex $v$, denoted $\deg(v)$, is the number of times that an edge is incident to $v$. A self-loop is incident to the same vertex twice.
+
+	\begin{center}
+		\input{images/degree.tex}
+	\end{center}
+
+	The \textit{maximum degree} of a graph $G$, denoted $\Delta(G)$, is the maximal degree of any vertex of $G$.
+
+	A \textit{walk} of a graph $G$ is a list of edges, such that consecutive edges in the list are incident to each other.
+
+	An \textit{$s,t$-walk} is a walk, such that the first edge is incident to the vertex $s$ and such that the last edge is incident to the vertex $t$.
+
+	The \textit{length} of a walk is the number of edges in the walk.
+
+	An $s,t$-walk is \textit{closed}, if $s=t$.
+
+	A \textit{path} of a graph $G$, is a walk such that only consecutive edges of the walk are incident.
+
+	A \textit{cycle} of a graph $G$, is a path but where the first and the last edge are incident to each other.
+
+	A graph $G$ is \textit{connected} if there exists a $s,t$-walk for every pair of distinct vertices $s,t \in V(G)$.
 
 	A \textit{component} of a graph, is a connected subgraph.
 
-	A graph is \textit{planar} if there exists a planar embedding of the graph.
+	A \textit{bijection} is a relation between two sets such that each element of either set is paired with exactly one element of the other set.
+
+	A \textit{plane graph} is a drawing of a graph, such that no edges are crossing.
 	
-	A \textit{plane graph} (syn. \textit{planar embedding of the graph}), is a 2D drawing of a planar graph such that no edges are crossing. In other words, for a planar graph $G$ a \textit{plane graph}, is a set of points $P$ and line segments $L$, with a one-to-one correspondence between $V(G)$ and $P$ and with a one-to-one correspondence between $E(G)$ and $L$, such that one of the endpoints of the line segments for the corresponding edges that are incident to some vertex $v$ occupy the same coordinate as the point corresponding to $v$ and such that line segments only pairwise intersect at their endpoints.
+	A graph $G$ is \textit{planar}, if there exists a \textit{plane graph} of $G$.
 
 	\begin{definition}
 		(\textit{Contraction})
 
-		Given an graph $G$ and pair of vertices $u,v \in G_V$ such that $\{u,v\}$ is in the image of $\psi_G$, remove all edges incident to $u$ and $v$ and update every edge $\{v,w\} \in E$ to be $\{u,w\}$.
+		A contraction is a function that given a multi-graph $G$ and pair of vertices $u,v \in V(G)$ such that $\{u,v\} \in E(G)$, then for all edges $e \in \mathbb{E}(G)$ if $\phi_G(e) = \{u,v\}$ then removes $e$ else if $\phi_G(e) = \{v,w\}$ then $\phi_G(e) = \{u,w\}$, and finally returns the resulting graph.
 	\end{definition}
 
-	\begin{definition}
-		(\textit{Dual Graph})
-
-		The dual graph $M^*$ of a plane graph $M$ is a graph where a face $f$ of $M$ is a vertex $f^*$ of $M^*$ and an edge $e$ that separates two faces $f_1$,$f_2$ of $M$ is an edge $e^*$ of $M^*$ incident to $f_1^*$ and $f_2^*$.
-	\end{definition}
+	\begin{center}
+		\input{images/contraction.tex}
+	\end{center}
 	
-	\begin{corollary}
-		If multiple edges separate $f_1$ and $f_2$ there will be parallel edges incident to $f_1*$ and $f_2*$.
-	\end{corollary}
-
 	\begin{definition}
 		(\textit{Medial Graph})
-
-		The medial graph $M(G)$ of a connected plane graph $G$ is a graph with a vertex $e^*$ for each edge $e$ of $G$ and for each face $f$ of $G$, there's an edge $d^*$ incident to a pair of vertices $e_1^*$, $e_2^*$ of $M(G)$ if $e_1$ and $e_2$ are consecutive in $f$.
+		
+		The medial graph $G^\times$ of a connected plane graph $G$ is a graph such that there is a bijection between $V(G^\times)$ and $\mathbb{E}(G)$ and such that for each face $f$ of $G$, there's an edge $e^\times \in \mathbb{E}(G^\times)$ incident to a pair of vertices $u^\times,v^\times \in V(G^\times)$ if edges $u,v \in \mathbb{E}(G)$ are consecutive in $f$.
 	\end{definition}
 
+	\begin{center}
+		\input{images/medial.tex}
+	\end{center}
+	
 	\begin{corollary}
 		A medial graph is a 4-regular plane graph.
 	\end{corollary}
 
-	A \textit{Branch Decomposition} $B$ of a graph $G$ is a tree where every edge of $G$ is a leaf in $B$ and every internal vertex of $B$ has exactly 3 neighbors. $B$ is an unrooted binary tree.
+	\begin{definition}
+		(\textit{Dual Graph})
 
-	Removing any edge $e = \{u,v\}$ of $B$ partitions $B$ into 2 trees $B_u$ and $B_v$ and the intersection of the sets of vertices in the leaves of $B_u$ and $B_v$ is called a middle set. Every edge of $B$ has an associated middle set. The maximal cardinality of any middle set among all middle sets of $B$ is the width of $B$.
+		The dual graph $G^*$ of a plane graph $G$ is a graph with a bijection between the set of faces of $G$ and $V(G^*)$ and a bijection between $\mathbb{E}(G)$ and $\mathbb{E}(G^*)$ such that an edge $e \in \mathbb{E}(G)$ that separates two faces $f_1$,$f_2$ of $G$ is an edge $e^* \in \mathbb{E}(G^*)$ incident to $f_1^*$ and $f_2^*$.
+	\end{definition}
 
-	There can be many branch decompositions of a graph $G$.
+	\begin{center}
+		\input{images/dual.tex}
+	\end{center}
+
+	A \textit{tree} is a connected graph with no cycles.
+
+	A \textit{leaf} $v$ of a tree $T$, is a vertex $v \in V(T)$ of degree 1.
+
+	An \textit{internal vertex} $v$ of a tree $T$, is a vertex $v \in V(T)$ of degree at least 2.
+
+	Let the \textit{leaf set} of a tree $T$, denoted $L(T)$, be the set of all vertices of $T$ that are also leaves.
+
+	A \textit{Branch Decomposition} $(B_G, \delta_G)$ of a graph $G$ consists of firstly, a tree $B_G$ where every internal vertex of $B_G$ has degree 3; in other words, $B_G$ is an unrooted binary tree, and secondly a bijection $\delta_G$ between $\mathbb{E}(G)$ and $L(B_G)$.
+
+	Removing any edge $e \in \mathbb{E}(B_G)$ partitions $B_G$ into 2 trees $P_e$ and $Q_e$. The set $L(P_e) \cap L(Q_e)$ is called a \textit{middle set} of $B_G$ given $e$, denoted $Z(B_G,e)$. The maximal cardinality of any middle set of $B_G$ given any $e$ of $B_G$ is the width of $B_G$; in other words, the width of $B_G$ is $\max\{ |Z(B, e)| \st e \in \mathbb{E}(B) \}$.
+
+	There might exist many branch decompositions of a graph $G$.
 
 	A \textit{Minimal Branch Decomposition} of $G$ is any branch decomposition of $G$ of minimal width among all branch decompositions of $G$.
 
-	Without the constraint of planarity on the input graph, then it is NP-complete to determine whether a general graph $G$ has a branch decomposition of width at most $k$, when $G$ and $k$ are both considered as inputs to the problem.
+	A \textit{Carving Decomposition} $(C_G, \lambda_G)$ of a graph $G$ consists of firstly, a tree unrooted binary tree $C_G$ and secondly a bijection $\lambda_G$ between $V(G)$ and $L(C_G)$.
 
-	Let $n = |V(G)|$ and $m = |E(G)|$.
+	Removing any edge $e \in \mathbb{E}(C_G)$ partitions $C_G$ into 2 trees $P_e$ and $Q_e$. The set $L(P_e) \cap L(Q_e)$ is called a \textit{middle set} of $C_G$ given $e$, denoted $Z(C_G,e)$. The maximal cardinality of any middle set of $C_G$ given any $e$ of $C_G$ is the width of $C_G$; in other words, the width of $C_G$ is $\max\{ |Z(C_G, e)| \st e \in \mathbb{E}(C_G) \}$.
 
-	A \textit{Carving Decomposition}
+	There might exist many carving decompositions of a graph $G$.
 
-	A \textit{Minimal Carving Decomposition}
+	A \textit{Minimal Carving Decomposition} of $G$ is any carving decomposition of $G$ of minimal width among all carving decompositions of $G$.
 
 \section{Description of the problem}
 
@@ -96,7 +178,7 @@
 	\begin{definition}
 		\textsc{The Planar Minimal Branch Decomposition Problem}
 
-		Input: Given a simple undirected connected planar graph $G$.
+		Input: Given a simple connected planar graph $G$.
 
 		Output: A minimal branch decomposition of $G$.
 	\end{definition}
@@ -106,7 +188,7 @@
 	\begin{definition}\label{def:mbdp}
 		\textsc{The Minimal Branch Decomposition Problem}
 
-		Input: Given a simple undirected connected graph $G$.
+		Input: Given a simple connected graph $G$.
 
 		Output: A minimal branch decomposition of $G$.
 	\end{definition}
@@ -118,9 +200,11 @@
 \section{The algorithm}
 	This section describes the algorithm given by Seymour and Thomas\cite{ST93} by identifying a set of practical problems and subproblems and how they relate.
 	
-	Problem \ref{def:mbdp} is the overarching problem, that the algorithm solves, and can be broken down into many smaller subproblems.
+	Problem \ref{def:mbdp} is the overarching problem, and can be broken down into many smaller subproblems.
 
-	Considering a graph $G$, you can compute a minimal branch decomposition of $G$ from a minimal carving decomposition of the medial of $G$, by replacing the vertices in leaves of the decomposition with edges, using the mapping between edges and vertices from computing the medial graph. \ref{} Therefore problem \ref{def:mbdp} break down into problems \ref{problem:mcd-to-mbd}, \ref{problem:medial} and \ref{problem:mcd}.
+	Considering a graph $G$, you can compute a minimal branch decomposition $(B_G, \delta_G)$ of $G$ from a minimal carving decomposition $(C_{G^\times}, \lambda_{G^\times})$ of the medial graph $G^\times$ of $G$. Do this by replacing the vertices in leaves of the carving decomposition with edges, using the mapping between edges and vertices from computing the medial graph; 
+
+	Therefore problem \ref{def:mbdp} break down into problems \ref{problem:mcd-to-mbd}, \ref{problem:medial} and \ref{problem:mcd}.
 
 	\begin{problem}\label{problem:mcd-to-mbd}
 		Given a minimal carving decomposition of a medial graph of $G$, output a minimal branch decomposition of $G$.
@@ -162,7 +246,6 @@
 
 	Informally; a contraction is merging two vertices into one and letting incident edges connect to the new vertex. The contraction in this paper differs a bit from conventional definitions of edge- and vertex-contractions, as other definitions might result in self-loops when contracting one of multiple parallel edges.
 
-	
 
 	Computing a medial graph is described in \ref{impl:medial}.
 
@@ -188,12 +271,12 @@
 		When the rat-catcher is on some room $f$, then edge $e$ is noisy iff. there is a closed walk of length scrictly less than $k$ containing $f^*$ and $e^*$ in the dual $M^*$.
 	\end{definition}
 
-	A quiet subgraph $Q(M, k, e)$, for some graph $M$, some noise level $k$ and some $e \in E(M)$, is a subgraph of $M$ with $V(Q(M, k, e)) = V(M)$ and
+	A quiet subgraph $Q(M, k, e)$, for some graph $M$, some noise level $k$ and some $e \in \mathbb{E}(M)$, is a subgraph of $M$ with $V(Q(M, k, e)) = V(M)$ and
 
-	$E(Q(M, k, e)) = \{e_1 \st $ every closed walk of $M^*$ containing $e_1^*$ and $e_2^*$ has length at least $k\}$
+	$\mathbb{E}(Q(M, k, e)) = \{e_1 \st $ every closed walk of $M^*$ containing $e_1^*$ and $e_2^*$ has length at least $k\}$
 
 	\begin{problem}\label{problem:noisy-subgraph}
-		Given a plane graph $M$ that might have parallel edges, an edge $e \in E(M)$, and noise level $k \in \mathbb{N}$, output the quiet subgraph $Q(M, k, e)$.
+		Given a plane graph $M$ that might have parallel edges, an edge $e \in \mathbb{E}(M)$, and noise level $k \in \mathbb{N}$, output the quiet subgraph $Q(M, k, e)$.
 	\end{problem}
 
 	Problem \ref{problem:noisy-subgraph} depends on a function for computing the dual of a graph. Computing a dual graph is problem \ref{problem:dual}.
@@ -202,15 +285,13 @@
 		Given a plane graph $M = \{V, E\}$ that might have parallel edges, output the dual of $M$.
 	\end{problem}
 
-	
-
 	The game states and possible moves, for some graph $M$ and some noise level $k$, can be described as a graph $H(M, k)$.
 
 	Let $F(M)$ be the set of faces of $M$.
 
 	Let $S$ be every possible state when the rat-catcher is in a face some of which might be losing states. $S = \{ (f, v) \st v \in V(M) \land f$ is a face of $ M \}$.
 
-	Let $T$ be every possible state when the rat-catcher is on an edge. $T = \{ (e, C) \st e \in E(M) \land C$ is a component of $Q(M, k, e) \}$.
+	Let $T$ be every possible state when the rat-catcher is on an edge. $T = \{ (e, C) \st e \in \mathbb{E}(M) \land C$ is a component of $Q(M, k, e) \}$.
 
 	Computing the quiet subgraph requires the dual graph. 
 	
@@ -240,7 +321,7 @@
 		
 		Solving problem \ref{problem:medial}.
 
-		I assume that the input graph $G$ is a planar graph given as an adjacency list such that the neighborhoods are given in clockwise ordering according to some plane embedding of $G$.
+		I assume that the input graph $G$ is a rotation system of a planar graph; an adjacency list such that the neighborhoods are given in clockwise ordering according to some plane embedding of $G$.
 		
 		Given this format, any two consecutive edges $e_1$ and $e_2$ in some face of $G$ are therefore consecutive vertices in the neighborhood of the vertex that $e_1$ and $e_2$ share.
 
@@ -266,9 +347,9 @@
 
 		Solving problem \ref{problem:contraction}.
 
-		As the resulting graph is later given as an argument to functions assuming a clockwise or counterclockwise ordering of vertices, the implementation needs to preserve this invariant when contracting.
+		As the resulting graph is later given as an argument to functions assuming a rotation system of a planar graph, the implementation needs to preserve this invariant when contracting.
 
-		As this contraction is a contraction of ALL edges connecting a pair of vertices, the resulting graph will not exhibit any self-loops. I suspect reconciling this and the ordering invariant could be difficult, but luckily in this context, it is irrelevant.
+		As this contraction is a contraction of ALL edges connecting a pair of vertices, the resulting graph will not exhibit any self-loops. I suspect reconciling this and the rotation system could be difficult, but luckily in this context, it is irrelevant.
 
 		For a contraction of vertices $a$ and $b$, I have chosen to create a new vertex ID $c$ instead of reusing $a$ or $b$ as this later makes assembling the carving decomposition easier.
 
@@ -324,6 +405,8 @@
 		No other path of the implementation needs the assumption that the dual is planar, therefore no clockwise or counterclockwise ordering of the neighborhoods of the adjacency list is needed.
 
 		The dual has a vertex for each face of the input graph. The faces are found by selecting an unmarked half-edge, and then marking all the edges of the face it belongs to, by following the edges that are just next to each other in the ordered neighborhoods.
+
+		% https://en.wikipedia.org/wiki/Rotation_system
 
 		The next halfedge $e_{i+1}$ after the current halfedge $e_i = \{u, v\}$ is the edge just before $-e_i$ in the ordered neighborhood around $v$.
 
