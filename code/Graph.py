@@ -6,7 +6,8 @@ class Graph:
 
 	def from_adj(self, adj: dict[int, list[int]]):
 		# assign edge ids
-		self.adj_edges = adj.copy()
+		adj_deepcopy = dict([(u, vs.copy()) for u, vs in adj.items()])
+		self.adj_edges = adj_deepcopy
 		next_edgeid = 1
 		for x, ys in self.adj_edges.items():
 			for i,y in enumerate(ys):
@@ -33,6 +34,10 @@ class Graph:
 	
 	def copy(self):
 		H = Graph()
-		H.adj_edges = self.adj_edges.copy()
-		H.edge_to_vertexpair = self.edge_to_vertexpair.copy()
+
+		adj_edges_deepcopy = dict([(u, vs.copy()) for u, vs in self.adj_edges.items()])
+		edge_to_vertexpair_deepcopy = dict([(e, t) for e, t in self.edge_to_vertexpair.items()])
+
+		H.adj_edges = adj_edges_deepcopy
+		H.edge_to_vertexpair = edge_to_vertexpair_deepcopy
 		return H
