@@ -249,7 +249,7 @@
 
 	With subroutines for all three problems, the implementation obtains a branch decomposition like so.
 
-	\pyfile{branch_decomposition.py}{0}{100000}
+	\pyfile{branch_decomposition.py}{6}{22}
 
 	Here are three sections, one for each subproblem.
 
@@ -270,7 +270,7 @@
 		
 		A medial graph is 4-regular; every node has degree 4. From the perspective of some medial node $v$, in some single iteration of the loop on line 14, two links are added to the neighborhood of $v$ in counterclockwise ordering, and later the two other links are added to the neighborhood of $v$ also in counterclockwise ordering. Therefore the medial graph $M$ is a rotation system.
 
-		\pyfile{medial_graph.py}{4}{24}
+		\pyfile{medial_graph.py}{5}{27}
 	
 	\subsection{Minimal Branch Decomposition from Minimal Carving Decomposition}
 
@@ -294,7 +294,7 @@
 
 		The "contraction" function, given a pair of vertices $u,v$, returns a new unique vertex ID $w$ (instead of reusing either $u$ or $v$), therefore by keeping track of which vertex is a contraction of which vertex-pair, in say a dictionary, constructing the decomposition is then a matter of recursively looking up vertices in the dictionary. Repeating this until only vertices of $M$ remain gives a carving decomposition in the aforementioned Newick-like nested tuple format.
 
-		\pyfile{carving_decomposition.py}{8}{48}
+		\pyfile{carving_decomposition.py}{7}{50}
 
 		The contraction algorithm depends on a function to compute a contraction and a function to compute the carving width of a graph. This is problems \ref{problem:contraction} and \ref{problem:cw}.
 
@@ -328,8 +328,8 @@
 
 			The rat-catching algorithm decides whether $cw(M) \geq k$ with $k \in \mathbb{N}^+$. The boolean results of this algorithm for $k=\{1,2,3,...\}$ are monotonic, so you can perform a binary or linear search to find the smallest $k$ where $cw(M) \geq k$ is true.
 
-			\pyfile{carving_width.py}{0}{8}
-			\pyfile{carving_width.py}{132}{157}
+			\pyfile{carving_width.py}{7}{8}
+			\pyfile{carving_width.py}{132}{158}
 
 	\section{The Rat-Catching Algorithm}
 
@@ -393,7 +393,6 @@
 
 		Considering a tuple $(f, v)$, if there exists a tuple $(e, C)$ that is losing where $e \in f$ and $v \in V(C)$ then $(f, v)$ is losing.
 
-		\pyfile{carving_width.py}{7}{9}
 		\pyfile{carving_width.py}{78}{130}
 
 		\subsubsection{Quiet subgraph}
@@ -428,10 +427,7 @@
 
 			The next halfedge $e_{i+1}$ after the current halfedge $e_i = \{u, v\}$ is the edge just before $-e_i$ in the neighborhood list for vertex $v$.
 
-			\pyfile{dual_graph.py}{21}{22}
-
-			\pyfile{dual_graph.py}{4}{50}
-
+			\pyfile{dual_graph.py}{4}{56}
 \section{Results}
 
 	The algorithm has been implemented in Python 3.12.2. The source code is available at \url{https://github.com/hojelse/thesis}.
