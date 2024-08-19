@@ -14,20 +14,24 @@
 		\draw[line width=0.5mm] (a2) -- node[above] {3} (a4);
 		\draw[line width=0.5mm] (a4) -- node[right] {4} (a5);
 		\draw[line width=0.5mm] (a3) -- node[above] {5} (a5);
+
+		\node[opacity=0] at (-1, 3.5) (start) {};
+		\node[opacity=0] at (-1, 0.5) (end) {};
+		\draw[dotted, thick] (start) .. controls +(2,0) and +(2,0) .. (end);
 	\end{scope}
 
 	\begin{scope}[xshift=6cm, yshift=0cm]
-		\node (G) at (1, 6) {Branch Decomposition of $G$};
-		\node (G) at (1, 5.5) {of width 4};
+		\node (G) at (1, 6) {Carving Decomposition of $G$};
+		\node (G) at (1, 5.5) {of width 3};
 
-		\node[circle, draw, color=black, fill=white] (b1) at (1, 4) {\{1,2\}};
-		\node[circle, draw, color=black, fill=white] (b3) at (0, 3) {\{2,4\}};
+		\node[circle, draw, color=black, fill=white] (b1) at (1, 4) {1};
+		\node[circle, draw, color=black, fill=white] (b3) at (0, 3) {2};
 		\node[circle, draw, color=black, fill=black] (i1) at (1, 3) {};
 		\node[circle, draw, color=black, fill=black] (i2) at (1.5, 2) {};
 		\node[circle, draw, color=black, fill=black] (i3) at (1, 1) {};
-		\node[circle, draw, color=black, fill=white] (b2) at (2.5, 2) {\{3,5\}};
-		\node[circle, draw, color=black, fill=white] (b4) at (0, 1) {\{4,5\}};
-		\node[circle, draw, color=black, fill=white] (b5) at (1, 0) {\{2,3\}};
+		\node[circle, draw, color=black, fill=white] (b2) at (2.5, 2) {3};
+		\node[circle, draw, color=black, fill=white] (b4) at (0, 1) {4};
+		\node[circle, draw, color=black, fill=white] (b5) at (1, 0) {5};
 	
 		% Draw the edges between nodes with labels
 		\draw[line width=0.5mm, color=black] (b1) -- (i1);
@@ -38,25 +42,25 @@
 		\draw[line width=0.5mm, color=black] (i3) -- (b4);
 		\draw[line width=0.5mm, color=black] (i3) -- (b5);
 
-		\node (G) at (3, -0.25) {\{2,3,4,5\}};
-
-		\node[opacity=0] at (-0.5, 2) (start) {};
-		\node[opacity=0] at (2.5, 0) (end) {};
-		\draw[dotted, thick] (start) .. controls +(2,0) and +(0,0.5) .. (end);
+		\node (G) at (-0.5, 4.25) {\{1,2,3\}};
+		
+		\node[opacity=0] at (0,4) (start) {};
+		\node[opacity=0] at (0,2) (end) {};
+		\draw[dotted, thick] (start) to[bend left=60] (end);
 	\end{scope}
 
 	\begin{scope}[xshift=12cm, yshift=0cm]
-		\node (G) at (1, 6) {Minimum Branch Decomposition of $G$};
-		\node (G) at (1, 5.5) {of width 2};
+		\node (G) at (1, 6) {Minimum Carving Decomposition of $G$};
+		\node (G) at (1, 5.5) { of width 3};
 
-		\node[circle, draw, color=black, fill=white] (b1) at (1, 4) {\{1,2\}};
-		\node[circle, draw, color=black, fill=white] (b3) at (0, 3) {\{2,4\}};
+		\node[circle, draw, color=black, fill=white] (b1) at (1, 4) {1};
+		\node[circle, draw, color=black, fill=white] (b3) at (0, 3) {2};
 		\node[circle, draw, color=black, fill=black] (i1) at (1, 3) {};
 		\node[circle, draw, color=black, fill=black] (i2) at (1.5, 2) {};
 		\node[circle, draw, color=black, fill=black] (i3) at (1, 1) {};
-		\node[circle, draw, color=black, fill=white] (b2) at (2.5, 2) {\{4,5\}};
-		\node[circle, draw, color=black, fill=white] (b4) at (0, 1) {\{3,5\}};
-		\node[circle, draw, color=black, fill=white] (b5) at (1, 0) {\{2,3\}};
+		\node[circle, draw, color=black, fill=white] (b2) at (2.5, 2) {3};
+		\node[circle, draw, color=black, fill=white] (b4) at (0, 1) {4};
+		\node[circle, draw, color=black, fill=white] (b5) at (1, 0) {5};
 	
 		% Draw the edges between nodes with labels
 		\draw[line width=0.5mm, color=black] (b1) -- (i1);
@@ -67,10 +71,10 @@
 		\draw[line width=0.5mm, color=black] (i3) -- (b4);
 		\draw[line width=0.5mm, color=black] (i3) -- (b5);
 
-		\node (G) at (3, -0.25) {\{2,5\}};
+		\node (G) at (-0.5, 4.25) {\{1,2,3\}};
 
-		\node[opacity=0] at (-0.5, 2) (start) {};
-		\node[opacity=0] at (2.5, 0) (end) {};
-		\draw[dotted, thick] (start) .. controls +(2,0) and +(0,0.5) .. (end);
+		\node[opacity=0] at (0,4) (start) {};
+		\node[opacity=0] at (0,2) (end) {};
+		\draw[dotted, thick] (start) to[bend left=60] (end);
 	\end{scope}
 \end{tikzpicture}

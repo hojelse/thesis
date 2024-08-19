@@ -1,7 +1,7 @@
 \documentclass{article}
 \include{setup}
 
-\title{Implementation of a minimal branch-decomposition algorithm for planar graphs.}
+\title{Implementation of a minimum branch-decomposition and branch-width algorithm for planar graphs.}
 \author{Kristoffer Højelse}
 \date{February 2024}
 
@@ -19,7 +19,38 @@
 % The first section of the paper is an "Introduction" that should motivate the problem, discuss related results, state the results more completely, and perhaps summarize the techniques or the structure of the paper or crucial definitions.
 
 \section{Introduction}
-	Some graph optimization problems can be solved efficiently for graphs of small branchwidth.\cite{CNP+11}
+
+	\todo{change graph to multigraph}
+
+	In complexity theory, an NP-hard problem has no known algorithm with all 3 of these properties: (1) runs in polynomial time, (2) gives an exact solution, and (3) runs on all instances of the problem.
+
+	You can find brute-force algorithms for NP-hard problems that both give an exact solution and run on all instances of the problem, but they run in exponential time.
+
+	You can find approximation algorithms for NP-hard problems that both run in polynomial time and run on all instances, but they give an approximate solution.
+
+	Finally, you can find parameterized algorithms for NP-hard problems that both run in polynomial time and give an exact solution, but they only run on instances of the problem where some parameter is small. Treewidth is a common such parameter.
+	
+	Treewidth is a measure of how tree-like a graph is, a value of 1 is exactly a tree and larger values are less tree-like. For some NP-hard problems, if a graph is sufficiently tree-like, then a parameterized algorithm can find an exact solution in polynomial time. For instance, the best-known running time for the \textsc{The Maximum Independent Set Problem} is exponential in $n$, particularly $O(1.1996^n \cdot n^{O(1)})$\cite{XN17}, but can be solved in $O(2^k \cdot k \cdot n)$ time for graphs of treewidth at most $k$, which is linear in $n$ and exponential in $k$.
+
+	Branch width and carving width are related to treewidth, and some NP-hard problems can be solved efficiently for graphs of small branchwidth.\cite{CNP+11}
+
+	Tree-, branch- and carving-width are all related. The treewidth of a graph is at least bw-1 and at most floor(3/2bw)-1.\cite{RS91}
+
+	The carving width is at least half the branch width and is at most the degree times the branch width.\cite{ED18}
+
+	You might have a parameterized algorithm with tree- or branch-width as a parameter, but to determine if a graph has a small tree- or branch-width, you might need to compute the tree- or branch-decomposition first. There is no known optimal tree decomposition/treewidth algorithm even for planar graphs.
+
+	A planar graph is, informally, a graph that you can draw on a plane surface without any edges crossing. There might be multiple such drawings of a planar graph. A particular such drawing is called a plane graph.
+	
+	The algorithm by Seymour and Thomas\cite{ST93} computes a minimum branch-decomposition of a planar graph in $O(n^4)$ time.
+
+	You can obtain an approximate optimum tree decomposition from the branch decomposition. So computing an approximate treewidth for planar graphs is possible in polynomial time.
+
+	The concepts of medial graph and dual graph are used in the algorithm. Both are planar graphs, that are constructed from a plane graph.
+	
+	The dual graph has vertices for faces and edges connecting the faces that share an edge. You might imagine a map of countries, with edges for borders, and a vertex for each country, plus a vertex for the surrounding sea. You could for instance query such a network for which countries are neighbors, or which countries are landlocked.
+
+	The medial graph also considers the faces but has vertices for edges, that are connected if the original edges were consecutive in some face. I have found no good metaphors for this.
 
 	Pino\cite{Pin16} applies branch decompositions.
 
@@ -27,15 +58,21 @@
 
 	Bian, Gu and Zhu\cite{BGZ15} describe and benchmark some implementations.
 
-	\todo{which? counting Hamiltonian cycles of planar cubic graphs}
+	\todo{Read params book about tree width}
 
 \section{Preliminaries}
 
+	This section defines the terms and concepts used in the algorithm.
+
+	The algorithm deals with graphs that might have parallel edges. Distinguishing between two parallel edges is crucial. Therefore, the implementation gives labels to both vertices and edges, by encoding a graph as an adjacency list of edge IDs and a map from unique edge IDs to its vertex-pair.
+
 	A \textit{graph} $G$ consists of a vertex set $V(G)$, and an edge set $\mathbb{E}(G)$ and a function $\phi_G$, where $V(G) \subset \mathbb{N}^+$ and where $\mathbb{E}(G) \subset \mathbb{N}^+$ and where $\phi_G \st \mathbb{E}(G) \to \{\{u,v\} \st u,v \in V(G)\}$.
-	
-	\textbf{Note.} Other authors might instead call this definition an undirected labelled pseudograph, with edges having own identity.
-	
+
+	\textbf{Note.} Normally \textit{graph} refers to a simple graph, usually also without labels, which are normally encoded by an adjacency list or matrix. In this paper, a graph is a multigraph with labels.
+
 	\textbf{Note.} Regarding notation, $V$ and $\mathbb{E}$ are operations on graphs returning the vertex set and edge set respectively.
+
+	Let $E(G)$ return a multiset of all vertex-pairs of $G$; in other words, $E(G) = \{\phi_G(e) \st e \in \mathbb{E}(G)\}$.
 
 	A \textit{drawing} of a graph $G$ is a node-link diagram in which the vertices are represented as disks and the edges are represented as line segments or curves in the Euclidean plane.
 
@@ -51,19 +88,11 @@
 		\input{images/graph.tex}
 	\end{center}
 
-	Let $E(G)$ return a multiset of all vertex-pairs of $G$; in other words, $E(G) = \{\phi_G(e) \st e \in \mathbb{E}(G)\}$.
-
 	A \textit{self-loop}, is an edge $e$ where $\phi_G(e) = \{u,v\}$ and $u = v$.
 
 	A graph $G$ is \textit{loop-less}, if no edge $e \in \mathbb{E}(G)$ is a self-loop. The edge with label 7, in the graph above, is an example of a self-loop.
 
-	A \textit{multi-graph} is a graph that is loop-less.
-
-	\begin{center}
-		\input{images/multigraph.tex}
-	\end{center}
-
-	A multi-graph $G$ is \textit{simple}, if it has no parallel edges; in other words, if elements of $E(G)$ are pair-wise distinct.
+	A graph $G$ is \textit{simple}, if it has no parallel edges; in other words, if all elements of $E(G)$ are pair-wise distinct.
 
 	\begin{center}
 		\input{images/simple-graph.tex}
@@ -122,8 +151,12 @@
 	\begin{definition}\label{def:contraction}
 		(\textit{Contraction})
 
-		A contraction is a function that given a multi-graph $G$ and pair of distinct vertices $u,v \in V(G)$ such that $\{u,v\} \in E(G)$, then for all edges $e \in \mathbb{E}(G)$ if $\phi_G(e) = \{u,v\}$ then removes $e$ else if $\phi_G(e) = \{v,w\}$ then $\phi_G(e) = \{u,w\}$, and finally returns the resulting graph.
+		A contraction is a function that given a multi-graph (with no self-loops) $G$ and pair of distinct vertices $u,v$ of some edge $\{u,v\} \in E(G)$, removes $e$ if $\phi_G(e) = \{u,v\}$ and makes any edge that is adjacent to $v$, $\phi_G(e) = \{w,v\}$, adjacent to $u$ instead, $\phi_G(e) = \{w,u\}$, and finally returns the resulting graph.
 	\end{definition}
+
+	\begin{corollary}
+		The resulting graph of a contraction will not have any self-loops.
+	\end{corollary}
 
 	\begin{center}
 		\input{images/contraction.tex}
@@ -161,38 +194,41 @@
 
 	Let the \textit{leaf set} of a tree $T$, denoted $L(T)$, be the subset of vertices $L(T) \subseteq V(T)$ that are also leaves of $T$.
 	
-	An \textit{internal vertex} $v$ of a tree $T$, is a vertex $v \in V(T) - L(T)$ that is not a leaf. An internal vertex therefore has degree at least 2.
+	An \textit{internal vertex} $v$ of a tree $T$, is a vertex $v \in V(T) - L(T)$ that is not a leaf. An internal vertex therefore has at least degree 2.
 
 	An \textit{unrooted binary tree} $T$, is a tree where every internal vertex has degree 3.
 
 	A \textit{Branch Decomposition} $(B_G, \delta_G)$ of a simple graph $G$ consists of firstly, an unrooted binary tree $B_G$ and secondly a bijection $\delta_G$ between $\mathbb{E}(G)$ and $L(B_G)$.
 
+	Removing any edge $e \in \mathbb{E}(B_G)$ partitions $B_G$ into 2 trees $P_e$ and $Q_e$. The set $\cup\{\phi_G(e) \st e \in L(P_e)\} \cap \cup\{\phi_G(e) \st e \in L(Q_e)\}$ is called a \textit{middle set} of $B_G$ given $e$, denoted $Z(B_G,e)$. The maximal cardinality of any middle set of $B_G$ given any $e \in \mathbb{E}(B_G)$ is the width of $B_G$; in other words, the width of $B_G$ is $\max\{ |Z(B, e)| \st e \in \mathbb{E}(B) \}$.
+
+	\todo{middle set definition is convoluted}
+
+	A \textit{Minimum Branch Decomposition} of $G$ is any branch decomposition of $G$ of minimum width among all branch decompositions of $G$, as there might exist many branch decompositions of a graph $G$.
+
 	\begin{center}
 		\input{images/branch.tex}
 	\end{center}
 
-	Removing any edge $e \in \mathbb{E}(B_G)$ partitions $B_G$ into 2 trees $P_e$ and $Q_e$. The set $L(P_e) \cap L(Q_e)$ is called a \textit{middle set} of $B_G$ given $e$, denoted $Z(B_G,e)$. The maximal cardinality of any middle set of $B_G$ given any $e$ of $B_G$ is the width of $B_G$; in other words, the width of $B_G$ is $\max\{ |Z(B, e)| \st e \in \mathbb{E}(B) \}$.
-
-	There might exist many branch decompositions of a graph $G$.
-
-	A \textit{Minimal Branch Decomposition} of $G$ is any branch decomposition of $G$ of minimal width among all branch decompositions of $G$.
-
 	A \textit{Carving Decomposition} $(C_G, \lambda_G)$ of a simple graph $G$ consists of firstly, an unrooted binary tree $C_G$ and secondly a bijection $\lambda_G$ between $V(G)$ and $L(C_G)$.
 
-	Removing any edge $e \in \mathbb{E}(C_G)$ partitions $C_G$ into 2 trees $P_e$ and $Q_e$. The set $L(P_e) \cap L(Q_e)$ is called a \textit{middle set} of $C_G$ given $e$, denoted $Z(C_G,e)$. The maximal cardinality of any middle set of $C_G$ given any $e$ of $C_G$ is the width of $C_G$; in other words, the width of $C_G$ is $\max\{ |Z(C_G, e)| \st e \in \mathbb{E}(C_G) \}$.
+	Removing any edge $e \in \mathbb{E}(C_G)$ partitions $C_G$ into 2 trees $P_e$ and $Q_e$. The set of edges $e \in \mathbb{E}(G)$ that cross $L(P_e)$ and $L(Q_e)$ is called a \textit{crossing set} of $C_G$ given an $e \in \mathbb{E}(C_G)$, denoted $Y(C_G,e)$. The maximum cardinality of any crossing set of $C_G$ given any $e \in \mathbb{E}(C_G)$ is the width of $C_G$; in other words, the width of $C_G$ is $\max\{ |Y(C, e)| \st e \in \mathbb{E}(C) \}$.
 
-	There might exist many carving decompositions of a graph $G$.
+	A \textit{Minimum Carving Decomposition} of $G$ is any carving decomposition of $G$ of minimum width among all carving decompositions of $G$, as there might exist many carving decompositions of a graph $G$.
 
-	A \textit{Minimal Carving Decomposition} of $G$ is any carving decomposition of $G$ of minimal width among all carving decompositions of $G$.
+	\begin{center}
+		\input{images/carving.tex}
+	\end{center}
 
+	\todo{find example with non-mimimum carving decomposition}
 
 \section{Overview of the algorithm}
 
-	Given a simple connected planar graph $G$, the algorithm computes a minimal branch decomposition of $G$.
+	Given a simple connected planar graph $G$, the algorithm computes a minimum branch decomposition of $G$.
 
-	To compute a minimal branch decomposition of $G$, the algorithm first computes the medial graph $G^\times$ of $G$, secondly computes a minimal carving decomposition of $G^\times$, and finally computes a minimal branch decomposition of $G$ from the minimal carving decomposition of $G^\times$.
+	To compute a minimum branch decomposition of $G$, the algorithm first computes the medial graph $G^\times$ of $G$, secondly computes a minimum carving decomposition of $G^\times$, and finally computes a minimum branch decomposition of $G$ from the minimum carving decomposition of $G^\times$.
 
-	To compute the minimal carving decomposition of $G^\times$, the algorithm uses a contraction algorithm that finds a series of contractions that does not increase the carving width and then assembles the series of contractions into a minimal carving decomposition of $G^\times$.
+	To compute the minimum carving decomposition of $G^\times$, the algorithm uses a contraction algorithm that finds a series of contractions that does not increase the carving width and then assembles the series of contractions into a minimum carving decomposition of $G^\times$.
 
 	To compute the carving width of $G$, the algorithm uses the rat-catching algorithm. By an analogy, the rat-catching algorithm can be described by a game of two players, the rat and rat-catcher, who take turns moving around on $G$. The game is played to determine, if the rat-catcher can corner the rat by making noise and thereby scaring away the rat from some subgraph, the size of which is dependent on $k$ or if the rat can escape indefinitely. Larger $k$ makes the rat-catching game easier for the rat-catcher. The smallest $k$ where the rat can escape indefinitely is the carving width of $G$.
 
@@ -215,36 +251,36 @@
 
 \section{The algorithm}
 
-	The main computational problem of this paper is \textsc{The Planar Minimal Branch Decomposition Problem}.
+	The main computational problem of this paper is \textsc{The Planar Minimum Branch Decomposition Problem}.
 
 	\begin{definition}\label{def:mbdp}
-		\textsc{The Planar Minimal Branch Decomposition Problem}
+		\textsc{The Planar Minimum Branch Decomposition Problem}
 
 		Input: Given a simple connected planar graph $G$.
 
-		Output: A minimal branch decomposition of $G$.
+		Output: A minimum branch decomposition of $G$.
 	\end{definition}
 
-	The algorithm described in this paper solves \textsc{The Planar Minimal Branch Decomposition Problem} in polynomial time.
+	The algorithm described in this paper solves \textsc{The Planar Minimum Branch Decomposition Problem} in polynomial time.
 
 	This section describes the algorithm given by Seymour and Thomas\cite{ST93} by identifying a set of practical problems and subproblems and how they relate.
 	
 	Problem \ref{def:mbdp} is the overarching problem. It can be broken down into many smaller subproblems.
 
-	Considering a plane graph $G$, you can compute a minimal branch decomposition $(B_G, \delta_G)$ of $G$ from a minimal carving decomposition $(C_{G^\times}, \lambda_{G^\times})$ of the medial graph $G^\times$ of $G$.
+	Considering a plane graph $G$, you can compute a minimum branch decomposition $(B_G, \delta_G)$ of $G$ from a minimum carving decomposition $(C_{G^\times}, \lambda_{G^\times})$ of the medial graph $G^\times$ of $G$.
 
 	Therefore problem \ref{def:mbdp} breaks down into subproblems \ref{problem:medial}, \ref{problem:mcd} and \ref{problem:mcd-to-mbd}.
 
 	\begin{problem}\label{problem:medial}
-		Given a plane graph $G$, output a medial graph $G^\times$, along with a bijectional relation between medial nodes $V(G^\times)$ and vertex-pairs $E(G)$.
+		Given a plane graph $G$, output a medial graph $G^\times$, along with a bijectional relation between medial nodes $V(G^\times)$ and edges $\mathbb{E}(G)$.
 	\end{problem}
 
 	\begin{problem}\label{problem:mcd}
-		Given a plane graph $M$, output a minimal carving decomposition of $M$.
+		Given a plane graph $M$, output a minimum carving decomposition of $M$.
 	\end{problem}
 
 	\begin{problem}\label{problem:mcd-to-mbd}
-		Given a minimal carving decomposition of a medial graph of $G$, output a minimal branch decomposition of $G$.
+		Given a minimum carving decomposition of a medial graph of $G$, output a minimum branch decomposition of $G$.
 	\end{problem}
 
 	With subroutines for all three problems, the implementation obtains a branch decomposition like so.
@@ -272,7 +308,7 @@
 
 		\pyfile{medial_graph.py}{5}{27}
 	
-	\subsection{Minimal Branch Decomposition from Minimal Carving Decomposition}
+	\subsection{Minimum Branch Decomposition from Minimum Carving Decomposition}
 
 		Solving problem \ref{problem:mcd-to-mbd}.
 
@@ -284,13 +320,15 @@
 
 		\pyfile{branch_decomposition.py}{5}{19}
 			
-	\subsection{Minimal Carving Decomposition}
+	\subsection{Minimum Carving Decomposition}
 
 		To solve \ref{problem:mcd} \ref{} gives a contraction algorithm.
 
-		By doing a series of edge contractions on a graph $M$, where the carving width does not increase until 3 vertices remain, then the series of contracted edges along with the three vertices, can be assembled into a minimal carving decomposition of $M$.
+		By doing a series of edge contractions on a graph $M$, where the carving width does not increase until 3 vertices remain, then the series of contracted edges along with the three vertices, can be assembled into a minimum carving decomposition of $M$.
 
-		The implementation finds a nonincreasing contraction by doing a linear search over every edge. No consideration has yet been given to any potential clever orderings of the edges that might improve the running time.
+		The implementation finds a nonincreasing contraction by doing a linear search over every edge.
+		
+		No consideration has yet been given to any potential clever orderings of the edges that might improve the running time.
 
 		The "contraction" function, given a pair of vertices $u,v$, returns a new unique vertex ID $w$ (instead of reusing either $u$ or $v$), therefore by keeping track of which vertex is a contraction of which vertex-pair, in say a dictionary, constructing the decomposition is then a matter of recursively looking up vertices in the dictionary. Repeating this until only vertices of $M$ remain gives a carving decomposition in the aforementioned Newick-like nested tuple format.
 
@@ -395,7 +433,7 @@
 
 		\pyfile{carving_width.py}{78}{130}
 
-		\subsubsection{Quiet subgraph}
+		\subsection{Quiet subgraph}
 
 			Solving problem \ref{problem:noisy-subgraph}.
 
@@ -417,23 +455,45 @@
 
 			\pyfile{carving_width.py}{10}{76}
 
-		\subsubsection{Dual graph}\label{impl:dual}
+		\subsection{Dual graph}\label{impl:dual}
 
 			Solving problem \ref{problem:dual}
 
 			No other path of the implementation needs the assumption that the dual is planar, therefore the output doesn't need to be a rotation system. This simplifies the implementation.
 
-			The dual has a vertex for each face of the input graph. The faces are found by selecting an unmarked half-edge, and then marking all the edges of the face it belongs to.
+			The dual has a vertex for each face of the input graph. The faces are found by selecting an unmarked half-edge, then marking all the edges of the face it belongs to, and repeating this until all half-edges are marked.
 
 			The next halfedge $e_{i+1}$ after the current halfedge $e_i = \{u, v\}$ is the edge just before $-e_i$ in the neighborhood list for vertex $v$.
 
 			\pyfile{dual_graph.py}{4}{56}
+
 \section{Results}
 
 	The algorithm has been implemented in Python 3.12.2. The source code is available at \url{https://github.com/hojelse/thesis}.
 	
 	The implementation has been tested on a set of graphs, and the results are as expected. \todo{more}
 
+	\todo{Agreement with Andreas' implementation on 6-100 vertices graphs, 10 different graphs}
+
+	\todo{note Tested on cubic planar graph}
+
+	\todo{tested by permuting vertex labels should not change the branch width}
+
+	\todo{test that bw follows theoretical bound}
+
+	Fomin and Thilikos 2006, New upper bound obn the decomposability pf planar graphs, bw <= 4.5 * sqrt(N) on planar
+
+	Semour Thomas 1994, Call routing and ratcatcher, bw(G) = bw(dual(G)) assuming G is bridgeless planar graphs
+
+	then the dual has half the vertices of the primal
+
+	4.5 * sqrt(N/2)
+
+	<=> 3.18199 * sqrt(n)
+
+	Test bw <= 3.18199 * sqrt(N) on cubic planar graphs
+
+	\todo{graphing theoretical bound}
 
 \newpage
 \section{References}
