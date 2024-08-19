@@ -20,8 +20,6 @@
 
 \section{Introduction}
 
-	\todo{change graph to multigraph}
-
 	In complexity theory, an NP-hard problem has no known algorithm with all 3 of these properties: (1) runs in polynomial time, (2) gives an exact solution, and (3) runs on all instances of the problem.
 
 	You can find brute-force algorithms for NP-hard problems that both give an exact solution and run on all instances of the problem, but they run in exponential time.
@@ -51,6 +49,8 @@
 	The dual graph has vertices for faces and edges connecting the faces that share an edge. You might imagine a map of countries, with edges for borders, and a vertex for each country, plus a vertex for the surrounding sea. You could for instance query such a network for which countries are neighbors, or which countries are landlocked.
 
 	The medial graph also considers the faces but has vertices for edges, that are connected if the original edges were consecutive in some face. I have found no good metaphors for this.
+
+	\todo{introduce seymour thomas contraction and rat-catching algorithm}
 
 	Pino\cite{Pin16} applies branch decompositions.
 
