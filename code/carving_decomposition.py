@@ -1,3 +1,4 @@
+import log
 from carving_width import carving_width
 from contraction import contraction
 from parse_graph import parse_text_to_adj, adj_to_text
@@ -5,11 +6,12 @@ from Graph import Graph
 
 # Find a contraction that does not increase the carving width
 def nonincreasing_cw_contraction(G: Graph, cw1: int) -> tuple:
-	for es in G.E():
-		u, v = G.edge_to_vertexpair[es]
+	for e in G.E():
+		u, v = G.edge_to_vertexpair[e]
 		G2, w = contraction(G, u, v)
 		cw2 = carving_width(G2)
 		if cw2 <= cw1:
+			log.add(f"Graph after contracting edge {e}: \n{str(G2)}")
 			return G2, (u, v), cw2, w
 	return None, None, None, None
 
@@ -43,6 +45,8 @@ def carving_decomposition(G: Graph) -> tuple:
 
 	a,b,c = G2.V()
 	cd = (decomp(a), decomp(b), decomp(c))
+
+	log.add("Carving decomposition: " + str(cd))
 	return cd
 
 if __name__ == "__main__":

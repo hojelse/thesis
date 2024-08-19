@@ -134,6 +134,7 @@ def carving_width(G: Graph) -> int:
 		r = 1
 		while True:
 			if rat_wins(r):
+				
 				l = r
 				r *= 2
 			else:

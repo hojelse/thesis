@@ -1,3 +1,4 @@
+import log
 from branch_decomposition import branch_decomposition
 from parse_graph import parse_text_to_adj, adj_to_text
 
@@ -42,11 +43,14 @@ def branch_width_of_branch_decomposition(bd):
 			middle_set = len(a.intersection(b))
 			width = max(width, middle_set)
 	
+	log.add("Branch width of branch decomposition: " + str(width))
 	return width
 
 def branch_width(adj: dict[int, list[int]]):
 	bd = branch_decomposition(adj)
-	return branch_width_of_branch_decomposition(bd)
+	bw = branch_width_of_branch_decomposition(bd)
+	log.add("Branch width: " + str(bw))
+	return bw
 
 if __name__ == "__main__":
 	adj = parse_text_to_adj()

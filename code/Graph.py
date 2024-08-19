@@ -27,8 +27,8 @@ class Graph:
 		return list(self.edge_to_vertexpair.keys())
 
 	def N(self, v: int) -> list[int]:
-		return [self.edge_to_vertexpair[e][1] for e in self.adj_edges[v]]
-
+		return [self.edge_to_vertexpair[e][1] if self.edge_to_vertexpair[e][0] == v else self.edge_to_vertexpair[e][0] for e in self.adj_edges[v]]
+	
 	def adj(self) -> dict[int, list[int]]:
 		return dict([(x, self.N(x)) for x in self.adj_edges.keys()])
 	
@@ -41,3 +41,38 @@ class Graph:
 		H.adj_edges = adj_edges_deepcopy
 		H.edge_to_vertexpair = edge_to_vertexpair_deepcopy
 		return H
+
+	def from_lmg(self, input_string: str):
+		lines = input_string.strip().split('\n')
+		N, M = map(int, lines[0].split())
+
+		for line in lines[1:N+1]:
+			x, *ys = map(int, line.split())
+			self.adj_edges[x] = ys
+
+		for line in lines[N+1:]:
+			e, u, v = map(int, line.split())
+			self.edge_to_vertexpair[e] = (u, v)
+
+	def to_lmg(self) -> str:
+		s = str(len(self.adj_edges)) + " " + str(len(self.edge_to_vertexpair.keys())) + "\n"
+		for x, ys in self.adj_edges.items():
+			s += str(x) + " " + " ".join(map(lambda y: str(y), ys)) + "\n"
+		for e, (u, v) in self.edge_to_vertexpair.items():
+			s += str(e) + " " + str(u) + " " + str(v) + "\n"
+		return s
+
+	def __str__(self):
+		return self.to_lmg()
+	
+def read_lmg_from_stdin() -> str:
+	N,M = map(int, input().split())
+	stdin_multiline_string = f"{N}, {M}\n"
+	for _ in range(N+M):
+		stdin_multiline_string += input() + "\n"
+	return stdin_multiline_string
+
+if __name__ == "__main__":
+	G = Graph()
+	G.from_lmg(read_lmg_from_stdin())
+	print(G)
