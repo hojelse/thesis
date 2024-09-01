@@ -1,4 +1,4 @@
-from parse_graph import parse_graph_to_adj
+from util import parse_graph_to_adj
 
 G = parse_graph_to_adj()
 vertex_set = set(G.keys())

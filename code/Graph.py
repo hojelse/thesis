@@ -28,6 +28,21 @@ class Graph:
 
 	def N(self, v: int) -> list[int]:
 		return [self.edge_to_vertexpair[e][1] if self.edge_to_vertexpair[e][0] == v else self.edge_to_vertexpair[e][0] for e in self.adj_edges[v]]
+
+	def rename_vertex(self, old: int, new: int):
+		self.adj_edges[new] = self.adj_edges.pop(old)
+		for e in self.E():
+			u,v = self.edge_to_vertexpair[e]
+			if u == old:
+				self.edge_to_vertexpair[e] = (new, v)
+			if v == old:
+				self.edge_to_vertexpair[e] = (u, new)
+
+	def rename_edge(self, old: int, new: int):
+		self.edge_to_vertexpair[new] = self.edge_to_vertexpair.pop(old)
+		for u,vs in self.adj_edges.items():
+			if old in vs:
+				self.adj_edges[u][vs.index(old)] = new
 	
 	def adj(self) -> dict[int, list[int]]:
 		return dict([(x, self.N(x)) for x in self.adj_edges.keys()])
@@ -67,10 +82,14 @@ class Graph:
 	
 def read_lmg_from_stdin() -> str:
 	N,M = map(int, input().split())
-	stdin_multiline_string = f"{N}, {M}\n"
+	stdin_multiline_string = f"{N} {M}\n"
 	for _ in range(N+M):
 		stdin_multiline_string += input() + "\n"
 	return stdin_multiline_string
+
+def read_lmg_from_file(filename: str) -> str:
+	with open(filename) as f:
+		return f.read()
 
 if __name__ == "__main__":
 	G = Graph()

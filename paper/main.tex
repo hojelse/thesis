@@ -2,14 +2,23 @@
 \include{setup}
 
 \title{Implementation of a minimum branch-decomposition and branch-width algorithm for planar graphs.}
-\author{Kristoffer Højelse}
-\date{February 2024}
+\author{Kristoffer Højelse (krbh)}
+
+\date{2 Sep 2024}
 
 \begin{document}
 
 \maketitle
 
+\begin{center}
+	\includegraphics[width=0.9\textwidth]{images/dalle-pied-piper.png}
+\end{center}
+\footnote{Illustration by Dall-E via ChatGPT (GPT-4o) with the prompt "Generate an image of pied piper the rat-catcher along with a computer science graph".}
+
+\newpage
+
 % west https://dwest.web.illinois.edu/grammar.html
+
 % The abstract states the results as fully as possible in a brief presentation. Crucial specialized terms the reader needs to know to understand the statements should be defined. The abstract stands on its own, especially in the age of electronic communication where it may be separate from the rest of the paper, and hence it contains no numbered reference to the bibliography.
 
 \begin{abstract}
@@ -20,53 +29,51 @@
 
 \section{Introduction}
 
-	In complexity theory, an NP-hard problem has no known algorithm with all 3 of these properties: (1) runs in polynomial time, (2) gives an exact solution, and (3) runs on all instances of the problem.
+	In algorithmic complexity theory, an NP-hard problem has no known algorithm with all 3 of these properties: (1) runs in polynomial time, (2) gives an exact solution, and (3) runs on all instances of the problem.
 
 	You can find brute-force algorithms for NP-hard problems that both give an exact solution and run on all instances of the problem, but they run in exponential time.
 
 	You can find approximation algorithms for NP-hard problems that both run in polynomial time and run on all instances, but they give an approximate solution.
 
 	Finally, you can find parameterized algorithms for NP-hard problems that both run in polynomial time and give an exact solution, but they only run on instances of the problem where some parameter is small. Treewidth is a common such parameter.
+
+	Treewidth is a measure of how tree-like a graph is. A graph with a treewidth of 1 is a tree. Larger values are less tree-like.
+
+	For some NP-hard problems, if a graph has a small enough treewidth, then a parameterized algorithm can find an exact solution in polynomial time.
+
+	Branch width and carving width are related to treewidth, and some NP-hard problems can be solved efficiently for graphs of small branch width.
 	
-	Treewidth is a measure of how tree-like a graph is, a value of 1 is exactly a tree and larger values are less tree-like. For some NP-hard problems, if a graph is sufficiently tree-like, then a parameterized algorithm can find an exact solution in polynomial time. For instance, the best-known running time for the \textsc{The Maximum Independent Set Problem} is exponential in $n$, particularly $O(1.1996^n \cdot n^{O(1)})$\cite{XN17}, but can be solved in $O(2^k \cdot k \cdot n)$ time for graphs of treewidth at most $k$, which is linear in $n$ and exponential in $k$.
+	The treewidth of a graph is at least $b-1$ and at most $\lfloor \frac{3}{2} b\rfloor-1$, where $b$ is the branch width.\cite{RS91}
 
-	Branch width and carving width are related to treewidth, and some NP-hard problems can be solved efficiently for graphs of small branchwidth.\cite{CNP+11}
+	The carving width is at least $\frac{b}{2}$ and is at most $\Delta(G) \cdot b$, where $b$ is the branch width.\cite{ED18}
 
-	Tree-, branch- and carving-width are all related. The treewidth of a graph is at least bw-1 and at most floor(3/2bw)-1.\cite{RS91}
+	A decomposition is generally a derivative structure that encapsulates some aspect of a graph. Tree-, branch- and carving-width all have related decompositions. These decompositions can be used in conjunction with dynamic programming to design efficient parameterized algorithms. For instance, Pino\cite{Pin16} applies branch decompositions on some NP-hard connectivity problems.
 
-	The carving width is at least half the branch width and is at most the degree times the branch width.\cite{ED18}
+	It is NP-complete to determine whether a graph $G$ has a branch-decomposition of width at most $k$, when $G$ and $k$ are both considered as inputs to the problem.\cite{ST93}
 
-	You might have a parameterized algorithm with tree- or branch-width as a parameter, but to determine if a graph has a small tree- or branch-width, you might need to compute the tree- or branch-decomposition first. There is no known optimal tree decomposition/treewidth algorithm even for planar graphs.
+	Informally, a planar graph is a graph that you can draw on a plane surface without any edges crossing. There might be multiple such drawings of a planar graph. A particular such drawing is called a plane graph. A plane graph can be said to divide the plane into regions called \textit{faces}.
 
-	A planar graph is, informally, a graph that you can draw on a plane surface without any edges crossing. There might be multiple such drawings of a planar graph. A particular such drawing is called a plane graph.
-	
 	The algorithm by Seymour and Thomas\cite{ST93} computes a minimum branch-decomposition of a planar graph in $O(n^4)$ time.
-
-	You can obtain an approximate optimum tree decomposition from the branch decomposition. So computing an approximate treewidth for planar graphs is possible in polynomial time.
-
-	The concepts of medial graph and dual graph are used in the algorithm. Both are planar graphs, that are constructed from a plane graph.
 	
-	The dual graph has vertices for faces and edges connecting the faces that share an edge. You might imagine a map of countries, with edges for borders, and a vertex for each country, plus a vertex for the surrounding sea. You could for instance query such a network for which countries are neighbors, or which countries are landlocked.
+	Bian, Gu, and Zhu\cite{BGZ15} describe and benchmark some implementations.
 
-	The medial graph also considers the faces but has vertices for edges, that are connected if the original edges were consecutive in some face. I have found no good metaphors for this.
+	This paper describes an implementation of the algorithm and publishes the source code for anyone to examine, use, and modify.
 
-	\todo{introduce seymour thomas contraction and rat-catching algorithm}
+	% You can obtain an approximate optimum tree decomposition from the branch decomposition. So computing an approximate treewidth for planar graphs is possible in polynomial time. This is a significant result, as there is no known polynomial time algorithm for computing the treewidth of a planar graph.
 
-	Pino\cite{Pin16} applies branch decompositions.
+	% The concepts of medial graph and dual graph are used in the algorithm. Both are graphs derived from some plane graph. Both are themselves plane.
 
-	Seymour and Thomas\cite{ST93} give the rat-catching algorithm.
+	% The dual graph has vertices for faces and edges connecting the faces that share an edge.
 
-	Bian, Gu and Zhu\cite{BGZ15} describe and benchmark some implementations.
-
-	\todo{Read params book about tree width}
+	% The medial graph also considers the faces, but has vertices for edges, that are connected if the original edges were consecutive in some face.
 
 \section{Preliminaries}
 
-	This section defines the terms and concepts used in the algorithm.
+	This section defines the terminology and concepts used in the algorithm.
 
 	The algorithm deals with graphs that might have parallel edges. Distinguishing between two parallel edges is crucial. Therefore, the implementation gives labels to both vertices and edges, by encoding a graph as an adjacency list of edge IDs and a map from unique edge IDs to its vertex-pair.
 
-	A \textit{graph} $G$ consists of a vertex set $V(G)$, and an edge set $\mathbb{E}(G)$ and a function $\phi_G$, where $V(G) \subset \mathbb{N}^+$ and where $\mathbb{E}(G) \subset \mathbb{N}^+$ and where $\phi_G \st \mathbb{E}(G) \to \{\{u,v\} \st u,v \in V(G)\}$.
+	A \textit{graph} $G$ consists of a vertex set $V(G)$, and an edge set $\mathbb{E}(G)$ and a relation $\phi_G$, where $V(G) \subset \mathbb{N}^+$ and where $\mathbb{E}(G) \subset \mathbb{N}^+$ and where $\phi_G \st \mathbb{E}(G) \to \{\{u,v\} \st u,v \in V(G)\}$.
 
 	\textbf{Note.} Normally \textit{graph} refers to a simple graph, usually also without labels, which are normally encoded by an adjacency list or matrix. In this paper, a graph is a multigraph with labels.
 
@@ -76,21 +83,19 @@
 
 	A \textit{drawing} of a graph $G$ is a node-link diagram in which the vertices are represented as disks and the edges are represented as line segments or curves in the Euclidean plane.
 
-	Here is a drawing of a graph $G$.
-
-	\begin{center}
-		\input{images/unlabeled-graph.tex}
-	\end{center}
-
-	Here is a labeled drawing of the same graph $G$ and its function $\phi_G$.
+	Here is a drawing of a graph $G$ and its relation $\phi_G$.
 
 	\begin{center}
 		\input{images/graph.tex}
 	\end{center}
 
-	A \textit{self-loop}, is an edge $e$ where $\phi_G(e) = \{u,v\}$ and $u = v$.
+	Two edges $e_1,e_2 \in \mathbb{E}(G)$ are \textit{parallel}, if $\phi_G(e_1) = \phi_G(e_2)$.
 
-	A graph $G$ is \textit{loop-less}, if no edge $e \in \mathbb{E}(G)$ is a self-loop. The edge with label 7, in the graph above, is an example of a self-loop.
+	An edge $e_1 \in \mathbb{E}(G)$ is a \textit{parallel edge} if there exists an edge $e_2 \in \mathbb{E}(G)$ such that $e_1$ and $e_2$ are parallel. The edge labeled $5$ and $6$, in the graph above, are examples of parallel edges.
+
+	A \textit{self-loop}, is an edge $e$ where $\phi_G(e) = \{u,v\}$ and $u = v$. The edge with label 7, in the graph above, is an example of a self-loop.
+
+	A graph $G$ is \textit{loop-less}, if no edge $e \in \mathbb{E}(G)$ is a self-loop.
 
 	A graph $G$ is \textit{simple}, if it has no parallel edges; in other words, if all elements of $E(G)$ are pair-wise distinct.
 
@@ -118,7 +123,7 @@
 		\input{images/degree.tex}
 	\end{center}
 
-	The \textit{maximum degree} of a graph $G$, denoted $\Delta(G)$, is the maximal degree of any vertex of $G$.
+	The \textit{maximum degree} of a graph $G$, denoted $\Delta(G)$, is the maximum degree of any vertex of $G$.
 
 	$$\Delta(G) = 4$$
 
@@ -146,16 +151,16 @@
 	
 	A graph $G$ is \textit{planar}, if there exists a \textit{plane graph} of $G$.
 
-	A \textit{rotation system} is an encoding of a graph, in particular, it is an adjacency list such that the neighborhood, around any vertex, is in clockwise ordering according to some plane embedding of $G$.
+	A \textit{rotation system} is an encoding of a graph, in particular, an adjacency list such that the list of neighbors, of every vertex, is sorted in clockwise ordering according to some drawing of $G$. If you encode a plane graph as a rotation system, you lose the coordinates of the vertices, but you can still recover the faces, to recover an equivalent plane graph.
 
 	\begin{definition}\label{def:contraction}
 		(\textit{Contraction})
 
-		A contraction is a function that given a multi-graph (with no self-loops) $G$ and pair of distinct vertices $u,v$ of some edge $\{u,v\} \in E(G)$, removes $e$ if $\phi_G(e) = \{u,v\}$ and makes any edge that is adjacent to $v$, $\phi_G(e) = \{w,v\}$, adjacent to $u$ instead, $\phi_G(e) = \{w,u\}$, and finally returns the resulting graph.
+		A contraction is an operation that given a graph $G$ and pair of distinct vertices $u,v$ of some edge $\{u,v\} \in E(G)$, removes $e$ if $\phi_G(e) = \{u,v\}$ and makes any edge that is adjacent to $v$, $\phi_G(e) = \{w,v\}$, adjacent to $u$ instead, $\phi_G(e) = \{w,u\}$, and finally returns the resulting graph.
 	\end{definition}
 
 	\begin{corollary}
-		The resulting graph of a contraction will not have any self-loops.
+		The resulting graph of a contraction will not have any new self-loops.
 	\end{corollary}
 
 	\begin{center}
@@ -176,7 +181,7 @@
 		A medial graph is a 4-regular plane graph.
 	\end{corollary}
 
-	I will refer to vertices and edges of the medial graph as "nodes" and "links" in an attempt at disambiguation.
+	I will refer to vertices and edges of the medial graph as \textit{nodes} and \textit{links} in an attempt at disambiguation.
 
 	\begin{definition}
 		(\textit{Dual Graph})
@@ -200,11 +205,9 @@
 
 	A \textit{Branch Decomposition} $(B_G, \delta_G)$ of a simple graph $G$ consists of firstly, an unrooted binary tree $B_G$ and secondly a bijection $\delta_G$ between $\mathbb{E}(G)$ and $L(B_G)$.
 
-	Removing any edge $e \in \mathbb{E}(B_G)$ partitions $B_G$ into 2 trees $P_e$ and $Q_e$. The set $\cup\{\phi_G(e) \st e \in L(P_e)\} \cap \cup\{\phi_G(e) \st e \in L(Q_e)\}$ is called a \textit{middle set} of $B_G$ given $e$, denoted $Z(B_G,e)$. The maximal cardinality of any middle set of $B_G$ given any $e \in \mathbb{E}(B_G)$ is the width of $B_G$; in other words, the width of $B_G$ is $\max\{ |Z(B, e)| \st e \in \mathbb{E}(B) \}$.
+	Removing any edge $e \in \mathbb{E}(B_G)$ partitions $B_G$ into 2 trees $P_e$ and $Q_e$. The set $\cup\{\phi_G(e) \st e \in L(P_e)\} \cap \cup\{\phi_G(e) \st e \in L(Q_e)\}$ is called a \textit{middle set} of $B_G$ given $e$, denoted $Z(B_G,e)$. The maximum cardinality of any middle set of $B_G$ given any $e \in \mathbb{E}(B_G)$ is the width of $B_G$; in other words, the width of $B_G$ is $\max\{ |Z(B, e)| \st e \in \mathbb{E}(B) \}$.
 
-	\todo{middle set definition is convoluted}
-
-	A \textit{Minimum Branch Decomposition} of $G$ is any branch decomposition of $G$ of minimum width among all branch decompositions of $G$, as there might exist many branch decompositions of a graph $G$.
+	A \textit{Minimum Branch Decomposition} of $G$ is any branch decomposition of $G$ of minimum width among all branch decompositions of $G$. Note there might exist many branch decompositions of a graph $G$, as well as, multiple minimum branch decompositions of a graph $G$.
 
 	\begin{center}
 		\input{images/branch.tex}
@@ -212,15 +215,13 @@
 
 	A \textit{Carving Decomposition} $(C_G, \lambda_G)$ of a simple graph $G$ consists of firstly, an unrooted binary tree $C_G$ and secondly a bijection $\lambda_G$ between $V(G)$ and $L(C_G)$.
 
-	Removing any edge $e \in \mathbb{E}(C_G)$ partitions $C_G$ into 2 trees $P_e$ and $Q_e$. The set of edges $e \in \mathbb{E}(G)$ that cross $L(P_e)$ and $L(Q_e)$ is called a \textit{crossing set} of $C_G$ given an $e \in \mathbb{E}(C_G)$, denoted $Y(C_G,e)$. The maximum cardinality of any crossing set of $C_G$ given any $e \in \mathbb{E}(C_G)$ is the width of $C_G$; in other words, the width of $C_G$ is $\max\{ |Y(C, e)| \st e \in \mathbb{E}(C) \}$.
+	Removing any edge $e \in \mathbb{E}(C_G)$ partitions $C_G$ into 2 trees $P_e$ and $Q_e$. The set of edges $e \in \mathbb{E}(G)$ that cross from $L(P_e)$ to $L(Q_e)$ is called a \textit{crossing set} of $C_G$ given an $e \in \mathbb{E}(C_G)$, denoted $Y(C_G,e)$. The maximum cardinality of any crossing set of $C_G$ given any $e \in \mathbb{E}(C_G)$ is the width of $C_G$; in other words, the width of $C_G$ is $\max\{ |Y(C, e)| \st e \in \mathbb{E}(C) \}$.
 
-	A \textit{Minimum Carving Decomposition} of $G$ is any carving decomposition of $G$ of minimum width among all carving decompositions of $G$, as there might exist many carving decompositions of a graph $G$.
+	A \textit{Minimum Carving Decomposition} of $G$ is any carving decomposition of $G$ of minimum width among all carving decompositions of $G$.
 
 	\begin{center}
 		\input{images/carving.tex}
 	\end{center}
-
-	\todo{find example with non-mimimum carving decomposition}
 
 \section{Overview of the algorithm}
 
@@ -230,9 +231,11 @@
 
 	To compute the minimum carving decomposition of $G^\times$, the algorithm uses a contraction algorithm that finds a series of contractions that does not increase the carving width and then assembles the series of contractions into a minimum carving decomposition of $G^\times$.
 
-	To compute the carving width of $G$, the algorithm uses the rat-catching algorithm. By an analogy, the rat-catching algorithm can be described by a game of two players, the rat and rat-catcher, who take turns moving around on $G$. The game is played to determine, if the rat-catcher can corner the rat by making noise and thereby scaring away the rat from some subgraph, the size of which is dependent on $k$ or if the rat can escape indefinitely. Larger $k$ makes the rat-catching game easier for the rat-catcher. The smallest $k$ where the rat can escape indefinitely is the carving width of $G$.
+	To compute the carving width of a graph $H$, the algorithm uses the rat-catching algorithm. By analogy, the rat-catching algorithm can be described as a game of two players, the rat, and the rat-catcher, who take turns moving around on $H$. The game is played to determine, if the rat can escape indefinitely or if the rat-catcher can corner the rat by making noise and thereby scaring away the rat from some subgraph, the size of which is dependent on $k$. Larger $k$ makes the rat-catching game easier for the rat-catcher and vice versa. The smallest $k$ where the rat can escape indefinitely is the carving width of $H$.
 
-	To compute a noisy subgraph of $G$ given a noise level $k$ and a rat-catchers position, the algorithm considers the dual graph of $G$ and finds the set of dual edges reachable by a closed walk of length at most $k-1$, the dual of these edges is the noisy subgraph.
+	To compute a noisy subgraph of $H$ given a noise level $k$ and a rat-catcher position, the algorithm considers the dual graph of $H$ and finds the set of dual edges reachable by a closed walk of length at most $k-1$, the dual of these edges is the noisy subgraph.
+
+	All of these subroutines are described in more detail in the following sections.
 
 	\begin{figure}[H]
 		\centering
@@ -241,13 +244,21 @@
 		\label{fig:overview}
 	\end{figure}
 
-\section{Data Structures and implementation considerations}
+\section{Data Structures and Implementation Considerations}
 
-	For many of the subroutines, the algorithm needs to deal with parallel edges and be able to tell them apart, therefore the implementation encodes a graph as an adjacency list of edges and a map from unique edge IDs its vertex-pair.
+	For many of the subroutines, the algorithm needs to deal with parallel edges and be able to tell them apart. Therefore the implementation encodes a graph as an adjacency list of edge IDs and a map from unique edge IDs its vertex-pair.
 
+	A \textit{half-edge} is one of the two directed edges that make up an undirected edge in an adjacency list of edge IDs.
+	
 	I have chosen to assign IDs such that if one half-edge has ID $i$ then the other half-edge has ID $-i$, therefore the absolute value $|i|$ uniquely identifies an undirected edge.
 
 	\pyfile{graph.py}{0}{33}
+
+	Rotation systems are of type \mintinline{py}{Graph} but the \mintinline{py}{adj_edges} list is sorted in clockwise ordering according to some drawing of the graph.
+
+	Carving-decompositions are adjacency lists \mintinline{py}{dict[int, list[int]]}.
+
+	Branch-decompositions are adjacency lists with either integers or integer pairs as vertices\\ \mintinline{py}{dict[int, list[Union[int, tuple[int, int]]]]}.
 
 \section{The algorithm}
 
@@ -269,7 +280,7 @@
 
 	Considering a plane graph $G$, you can compute a minimum branch decomposition $(B_G, \delta_G)$ of $G$ from a minimum carving decomposition $(C_{G^\times}, \lambda_{G^\times})$ of the medial graph $G^\times$ of $G$.
 
-	Therefore problem \ref{def:mbdp} breaks down into subproblems \ref{problem:medial}, \ref{problem:mcd} and \ref{problem:mcd-to-mbd}.
+	Therefore problem \ref{def:mbdp} breaks down into subproblems \ref{problem:medial}, \ref{problem:mcd}, and \ref{problem:mcd-to-mbd}.
 
 	\begin{problem}\label{problem:medial}
 		Given a plane graph $G$, output a medial graph $G^\times$, along with a bijectional relation between medial nodes $V(G^\times)$ and edges $\mathbb{E}(G)$.
@@ -285,56 +296,43 @@
 
 	With subroutines for all three problems, the implementation obtains a branch decomposition like so.
 
-	\pyfile{branch_decomposition.py}{6}{22}
+	\pyfile{branch_decomposition.py}{19}{27}
 
-	Here are three sections, one for each subproblem.
+	The next 3 subsections describe the implementation of the subroutines for the problems \ref{problem:medial}, \ref{problem:mcd}, and \ref{problem:mcd-to-mbd}.
 
 	\subsection{Medial graph}
 
 		Solving problem \ref{problem:medial}.
 
-		Recall the definition \ref{def:medial}.
-
 		I assume that the input graph $G$ is a rotation system. Given this format, any two consecutive edges $w$ and $v$ in some face of $G$ are therefore consecutive vertices in the neighborhood of the vertex $a$ that $w$ and $v$ share.
 
-		\begin{figure}[H]
-			\centering
-			\includegraphics[width=\textwidth]{./images/medial-implementation-4-reg-argument.png}
-			\caption{Two iterations of the algorithm computing a medial rotation system}
-			\label{fig:overview}
-		\end{figure}
+		A medial graph is 4-regular; every node has degree 4. Exploiting this property, the implementation iterates over the faces of $G$, and for each pair of clockwise consecutive edges $w$ and $v$ in some face, adds a link between the nodes corresponding to $w$ and $v$ in the medial graph.
 		
-		A medial graph is 4-regular; every node has degree 4. From the perspective of some medial node $v$, in some single iteration of the loop on line 14, two links are added to the neighborhood of $v$ in counterclockwise ordering, and later the two other links are added to the neighborhood of $v$ also in counterclockwise ordering. Therefore the medial graph $M$ is a rotation system.
+		From the perspective of a medial node $v^\times$, the first two links are added to its neighborhood in counterclockwise ordering, after processing the first face, and later the final two links are added in counterclockwise ordering, after processing the second face. Therefore the medial graph $M$ is a rotation system.
 
-		\pyfile{medial_graph.py}{5}{27}
-	
+		\pyfile{medial_graph.py}{4}{54}
+
 	\subsection{Minimum Branch Decomposition from Minimum Carving Decomposition}
 
 		Solving problem \ref{problem:mcd-to-mbd}.
 
-		For both branch- and carving-decompositions, I have chosen a data structure of tuples of either more tuples or integers. This has a straightforward translation to the Newick Tree Format, a concise notation for tree structures.
+		The implementation identifies the leaf vertices and maps them to vertex-pairs according to the relation \mintinline{py}{node_to_vertexpair} from the computation of the medial graph.
 
-		To then solve the above-mentioned problem, the implementation recursively returns either returns a copy of any tuple it encounters or returns a tuple of integers for any integer in encounters, using the relation node\_to\_vertexpair.
-
-		This effectively replaces the leaf nodes of the carving decomposition with vertex-pairs for the branch decomposition.
-
-		\pyfile{branch_decomposition.py}{5}{19}
+		\pyfile{branch_decomposition.py}{6}{17}
 			
 	\subsection{Minimum Carving Decomposition}
 
-		To solve \ref{problem:mcd} \ref{} gives a contraction algorithm.
+		Solving problem \ref{problem:mcd}.
 
-		By doing a series of edge contractions on a graph $M$, where the carving width does not increase until 3 vertices remain, then the series of contracted edges along with the three vertices, can be assembled into a minimum carving decomposition of $M$.
+		By doing a series of edge contractions on a graph $M$, where the carving width does not increase, until 3 vertices remain, then the series of contracted edges along with the 3 vertices, can be assembled into a minimum carving decomposition of $M$.
 
-		The implementation finds a nonincreasing contraction by doing a linear search over every edge.
-		
-		No consideration has yet been given to any potential clever orderings of the edges that might improve the running time.
+		The implementation finds a nonincreasing contraction by doing a linear search over every edge. No consideration has yet been given to any potential clever orderings of the edges that might improve the running time.
 
-		The "contraction" function, given a pair of vertices $u,v$, returns a new unique vertex ID $w$ (instead of reusing either $u$ or $v$), therefore by keeping track of which vertex is a contraction of which vertex-pair, in say a dictionary, constructing the decomposition is then a matter of recursively looking up vertices in the dictionary. Repeating this until only vertices of $M$ remain gives a carving decomposition in the aforementioned Newick-like nested tuple format.
+		The \mintinline{py}{contraction} function, given a pair of vertices $u,v$, returns a new unique vertex ID $w$ (instead of reusing $u$ as definition \ref{def:contraction} suggests), therefore by keeping track of which vertex is a contraction of which vertex-pair, in a dictionary, constructing the decomposition is then a matter of recursively looking up vertices in the dictionary. Repeating this until only vertices of $M$ remain gives a carving decomposition.
 
-		\pyfile{carving_decomposition.py}{7}{50}
+		\pyfile{carving_decomposition.py}{7}{79}
 
-		The contraction algorithm depends on a function to compute a contraction and a function to compute the carving width of a graph. This is problems \ref{problem:contraction} and \ref{problem:cw}.
+		The contraction algorithm depends on a function to compute a contraction and a function to compute the carving width of a graph. These are referred to as problems \ref{problem:contraction} and \ref{problem:cw}.
 
 		\begin{problem}\label{problem:contraction}
 			Given a graph $M$ and a pair of vertices $\{u, v\}$, output the graph resulting from a contraction.
@@ -348,17 +346,17 @@
 
 			Solving problem \ref{problem:contraction}.
 
-			As the resulting graph is later given as an argument to functions assuming a rotation system of a planar graph, the implementation needs to preserve this invariant when contracting.
+			The implementation needs to preserve the rotation system, as the resulting graph is later given as an argument to functions assuming a rotation system of a planar graph.
 
-			Recall the definition \ref{def:contraction}. As this contraction removes all edges connecting a pair of vertices, the resulting graph will not exhibit any self-loops. I suspect reconciling this and the rotation system could be difficult, but in this context, it is irrelevant.
+			Recall the definition \ref{def:contraction}. As this contraction removes all edges connecting a pair of vertices, the resulting graph will not create any new self-loops. I suspect reconciling this and the rotation system could be difficult, but in this context, it is irrelevant.
 
 			For a contraction of vertices $a$ and $b$, I have chosen to create a new vertex ID $c$ (instead of, as the definition suggests, reusing either $a$ or $b$), as this makes the implementation, for assembling the carving decomposition, simpler.
 
-			First, let any edges incident to $a$ or $b$ be incident to $c$ instead. Then creating the neighborhood of the new vertex $c$ is done by firstly finding any shared edge $e$; an edge that was in the neighborhood of both $a$ and $b$. This edge has some ID $e$ and the other half-edge, ID $-e$, will therefore be in the neighborhood of $b$. Now "rotating" the lists representing the neighborhoods of $a$ and $b$ such edge $e$ and $-e$ is at index 0, in their respective lists, means that a concatenation of the lists will preserve the clockwise ordering around the new vertex $c$. And finally, remove any edges connecting $a$ and $b$.
-			
-			This is where telling apart two edges that are parallel, by having edge IDs, becomes very useful. Inferring where to stitch together the neighborhoods to preserve the clockwise ordering, solely from an adjacency list, is way less practical.
+			First, let any edges incident to $a$ or $b$ be incident to $c$ instead. Then creating the neighborhood of the new vertex $c$ is done by firstly finding any shared edge $e$; an edge that was in the neighborhood of both $a$ and $b$. This edge has some ID $e$ and the other half-edge, ID $-e$, will therefore be in the neighborhood of $b$. Now \textit{rotating} the lists representing the neighborhoods of $a$ and $b$ such edge $e$ and $-e$ is at index 0, in their respective lists, means that a concatenation of the lists will preserve the clockwise ordering around the new vertex $c$. And finally, remove any edges connecting $a$ and $b$.
 
-			\pyfile{contraction.py}{4}{49}
+			This is where telling apart two edges that are parallel, by having edge IDs, becomes very useful. Inferring where to stitch together the neighborhoods to preserve the clockwise ordering, solely from an adjacency list, is not a trivial problem.
+
+			\pyfile{contraction.py}{2}{46}
 
 		\subsubsection{Carving Width}
 
@@ -366,8 +364,8 @@
 
 			The rat-catching algorithm decides whether $cw(M) \geq k$ with $k \in \mathbb{N}^+$. The boolean results of this algorithm for $k=\{1,2,3,...\}$ are monotonic, so you can perform a binary or linear search to find the smallest $k$ where $cw(M) \geq k$ is true.
 
-			\pyfile{carving_width.py}{7}{8}
-			\pyfile{carving_width.py}{132}{158}
+			\pyfile{carving_width.py}{5}{6}
+			\pyfile{carving_width.py}{130}{156}
 
 	\section{The Rat-Catching Algorithm}
 
@@ -375,15 +373,15 @@
 
 		The rat-catching algorithm can be described as a game of two players, the rat and rat-catcher. Considering a graph $M$, the edges of a face can be thought of as walls of a room and vertices as the corners of some rooms. The rat moves from corner to corner along the walls and the rat-catcher moves from room to room through some wall. The rat-catcher can force the rat away from some walls by making noise. A round of this game is played with some noise level $k$. The rat-catcher wins the round if they can force the rat to be in some wall of the room that they are in, and the rat wins the round if there is a strategy whereby the rat can escape indefinitely.
 
-		Additionally, if $\Delta(M) \geq k$ then the rat wins. The argument for why this is true is glossed over in \ref{BGZ15}. This is discussed in section \ref{}.
+		Additionally, if $\Delta(M) \geq k$ then the rat wins. The argument for why this is true is glossed over in \ref{BGZ15}.
 
 		So if $\Delta(M) < k$, then the game is played to determine an outcome, otherwise the rat is said to win.
 
 		We have arrived at the crux of the algorithm. Does the rat win for some integer $k$?
 
-		For some noise level and location of the rat-catcher, exactly which edges are noisy and which are quiet are definitions \ref{def:edge-quiet} and \ref{def:face-quiet}.
+		For some noise level and location of the rat-catcher, exactly which edges are noisy and which are quiet are definitions \ref{def:edge-noisy} and \ref{def:face-quiet}.
 
-		\begin{definition}\label{def:edge-quiet}
+		\begin{definition}\label{def:edge-noisy}
 			When the rat-catcher is on some edge $e_1$, then edge $e_2$ is noisy iff. there is a closed walk of length scrictly less than $k$ containing $e_1^*$ and $e_2^*$ in the dual $M^*$.
 		\end{definition}
 
@@ -393,7 +391,7 @@
 			When the rat-catcher is in some face $f$, then edge $e$ is noisy iff. there is a closed walk of length scrictly less than $k$ containing $f^*$ and $e^*$ in the dual $M^*$.
 		\end{definition}
 
-		A quiet subgraph $Q(M, k, e)$, for some graph $M$, some noise level $k$ and some $e \in \mathbb{E}(M)$, is a subgraph of $M$ with the vertex set $V(Q(M, k, e)) = V(M)$ and the edge set
+		A \textit{quiet subgraph} $Q(M, k, e)$, for some graph $M$ and some noise level $k$ and some edge $e \in \mathbb{E}(M)$, is a subgraph of $M$ with the vertex set $V(Q(M, k, e)) = V(M)$ and the edge set
 
 		$\mathbb{E}(Q(M, k, e)) = \{e_1 \st $ every closed walk of $M^*$ containing $e_1^*$ and $e_2^*$ has length at least $k\}$
 
@@ -411,13 +409,13 @@
 
 		Let $F(M)$ be the set of faces of $M$.
 
-		Let $S$ be every possible state when the rat-catcher is in a face some of which might be losing states. $S = \{ (f, v) \st v \in V(M) \land f$ is a face of $ M \}$.
+		Let $S$ be every possible state when the rat-catcher is in a face, some of which might be losing states. $S = \{ (f, v) \st v \in V(M) \land f$ is a face of $ M \}$.
 
 		Let $T$ be every possible state when the rat-catcher is on an edge. $T = \{ (e, C) \st e \in \mathbb{E}(M) \land C$ is a component of $Q(M, k, e) \}$.
 		
 		With the graph of possible moves $H$, the only missing piece of the rat-catching algorithm is how to determine the outcome.
 
-		You can mark states/vertices of the graph $H$ that are losing states, and then repeatedly mark any state that leads to a losing state, until either every state is marked or no more states can be marked. If every state is marked then the rat-catcher wins, otherwise the rat wins.
+		You can mark vertices of the graph $H$ that are losing states, and then repeatedly mark any state that leads to a losing state, until either every state is marked or no more states can be marked. If every state is marked then the rat-catcher wins, otherwise the rat wins.
 
 		Solving problem \ref{problem:cw}.
 
@@ -427,17 +425,17 @@
 
 		The outcome of the game is computed by marking states as losing.
 		
-		Considering a tuple $(e, C) \in T$, if all $(f, v)$ where $v \in V(C)$ is losing then $(e, C)$ is losing.
+		Considering a state $(e, C) \in T$, if all $(f, v)$ where $v \in V(C)$ is losing then $(e, C)$ is losing.
 
-		Considering a tuple $(f, v)$, if there exists a tuple $(e, C)$ that is losing where $e \in f$ and $v \in V(C)$ then $(f, v)$ is losing.
+		Considering a state $(f, v)$, if there exists a state $(e, C)$ that is losing where $e \in f$ and $v \in V(C)$ then $(f, v)$ is losing.
 
-		\pyfile{carving_width.py}{78}{130}
+		\pyfile{carving_width.py}{79}{128}
 
 		\subsection{Quiet subgraph}
 
 			Solving problem \ref{problem:noisy-subgraph}.
 
-			Recall the definition \ref{def:edge-quiet}.
+			Recall the definition of a noisy edge \ref{def:edge-noisy}.
 
 			Let $s_1$ and $t_1$ be the vertex-pair for the link $e_1^*$ and let $s_2$ and $t_2$ be the vertex-pair for the link $e_2^*$.
 
@@ -447,13 +445,13 @@
 
 			The single source shortest distances can then be computed using a breadth-first approach.
 
-			Using the mapping from links to edges, and the fact that an edge $e$ is called quiet iff. $e$ is not noisy, the quiet edges can be obtained in the natural way.
+			Using the mapping from links to edges, and the fact that an edge $e$ is called quiet iff. $e$ is not noisy, the quiet edges can be obtained by applying the map.
 
 			Computing the quiet subgraph and the components thereof is done with a depth-first search approach.
 
 			The edges of the components are irrelevant for the rest of the algorithm, so only a list of vertices is returned for each component.
 
-			\pyfile{carving_width.py}{10}{76}
+			\pyfile{carving_width.py}{6}{74}
 
 		\subsection{Dual graph}\label{impl:dual}
 
@@ -468,32 +466,36 @@
 			\pyfile{dual_graph.py}{4}{56}
 
 \section{Results}
-
-	The algorithm has been implemented in Python 3.12.2. The source code is available at \url{https://github.com/hojelse/thesis}.
+	The algorithm has been implemented in Python 3.12.2. The source code is available on GitHub \footnote{\url{https://github.com/hojelse/thesis}}.
 	
-	The implementation has been tested on a set of graphs, and the results are as expected. \todo{more}
+	The implementation has been tested against two sets of graphs, using various methods.
 
-	\todo{Agreement with Andreas' implementation on 6-100 vertices graphs, 10 different graphs}
+	The first set of graphs are random cubic planar graphs. The second set of graphs are small simple planar graphs generated by \textit{Plantri}\footnote{\url{http://users.cecs.anu.edu.au/~bdm/plantri/}}\footnote{\url{https://github.com/mishun/plantri/tree/master}}.
 
-	\todo{note Tested on cubic planar graph}
+	The random cubic planar graphs is a set of 23 graphs, that were generated by a script, created by Andreas Björklund. See appendix \ref{graphs/gen-random-planar-cubic.py} for the generator script. The graphs are available on GitHub \footnote{\url{https://github.com/hojelse/thesis/tree/main/code/graphs/random-planar-cubic}}. They also created a branch width algorithm that was cross-validated with the implementation from this paper. The two algorithms agreed on every value. See appendix \ref{test-cubic-cross-validate.py} for the script.
 
-	\todo{tested by permuting vertex labels should not change the branch width}
+	The second set of small simple planar graphs was generated by Plantri, which exhaustively generated all $2228$ simple planar graphs on 2 to 7 vertices.  Testing the implementation on these graphs, the results are shown in figure \ref{fig:bw-planar}. The scripts for generating, processing, and testing this set of graphs are in appendix \ref{graphs/gen-planar.py}, \ref{graphs/process_planar_code.py}, and \ref{test-planar-graphs.py}. The graphs are available on GitHub \footnote{\url{https://github.com/hojelse/thesis/tree/main/code/graphs/simple-planar}}
 
-	\todo{test that bw follows theoretical bound}
+	Fomin and Thilikos\cite{FT06} find a new theoretical upper bound on the branch width of planar graphs, $bw(G) \leq 4.5 \cdot \sqrt{n}$, where $n$ is the number of vertices in the graph.
 
-	Fomin and Thilikos 2006, New upper bound obn the decomposability pf planar graphs, bw <= 4.5 * sqrt(N) on planar
+	Some of the graphs are suspected to be cause the implementation to go into an infinite loop, as the branch width is not computed within a reasonable time. So the implementation is suspectedly not correct for all planar graphs.
 
-	Semour Thomas 1994, Call routing and ratcatcher, bw(G) = bw(dual(G)) assuming G is bridgeless planar graphs
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=\textwidth]{./images/bw-planar.png}
+		\caption{Branch width of planar graphs generated by Plantri. The x-axis is the number of vertices in the graph, and the y-axis is the branch width. The red line is $\lfloor 4.5 \cdot \sqrt{n} \rfloor$. The blue dots are the branch width and the number directly next to it is the number of the graph with the same unique (n, bw) pair.}
+		\label{fig:bw-planar}
+	\end{figure}
 
-	then the dual has half the vertices of the primal
+	On the same set of graphs, the implementation was tested against itself by permuting the vertex labels of input graphs, which should not change the branch width. This was not done exhaustively, but the results were as expected.
 
-	4.5 * sqrt(N/2)
+	A tool, \textit{grafer}, was developed for visualizing and editing planar graphs and used for debugging during this thesis \url{https://github.com/hojelse/grafer}.
 
-	<=> 3.18199 * sqrt(n)
+\section{Future work}
+	The implementation was only tested on cubic planar graphs until late in the process of writing this thesis, as there were plans to use this branch-decomposition algorithm as a subroutine in a larger algorithm. As seen in the results, the implementation does not behave nicely for all planar graphs. Debugging the implementation on the simple planar graphs generated by Plantri that fail is a good next step.
 
-	Test bw <= 3.18199 * sqrt(N) on cubic planar graphs
-
-	\todo{graphing theoretical bound}
+\section{Conclusion}
+	This paper presents a clear and accessible implementation of the rat-catching algorithm for planar graphs, based on the work of Seymour and Thomas. The implementation follows the original algorithm and is supported by a framework for testing correctness to ensure its reliability. The results regrettably show that there are still bugs to eliminate. The source code provided alongside this paper is intended as a practical resource for those working on algorithm design involving branch- and carving decompositions. I hope this work will be useful for students, researchers, or practitioners looking to learn about, use, or develop a branch-decomposition algorithm by examining, using, or modifying the code provided alongside this paper. \url{https://github.com/hojelse/thesis}.
 
 \newpage
 \section{References}
@@ -501,17 +503,33 @@
 
 \newpage
 \section{Appendix}
-	% \pyfile{branch_decomposition.py}{0}{1000}
-	% \pyfile{branch_width_brute_force.py}{0}{1000}	
-	% \pyfile{branch_width.py}{0}{1000}
-	% \pyfile{carving_decomposition.py}{0}{1000}
-	% \pyfile{carving_width_brute_force.py}{0}{1000}
-	% \pyfile{carving_width.py}{0}{1000}
-	% \pyfile{contraction.py}{0}{1000}
-	% \pyfile{dual_graph.py}{0}{1000}
-	% \pyfile{Graph.py}{0}{1000}
-	% \pyfile{medial_graph.py}{0}{1000}
-	% \pyfile{parse_graph.py}{0}{1000}
-	% \pyfile{parse_newick.py}{0}{1000}
-
+	\subsection{}
+	\pyfile{branch_decomposition.py}{0}{1000}\label{branch_decomposition.py}
+	\subsection{}
+	\pyfile{branch_width.py}{0}{1000}\label{branch_width.py}
+	\subsection{}
+	\pyfile{carving_decomposition.py}{0}{1000}\label{carving_decomposition.py}
+	\subsection{}
+	\pyfile{carving_width.py}{0}{1000}\label{carving_width.py}
+	\subsection{}
+	\pyfile{contraction.py}{0}{1000}\label{contraction.py}
+	\subsection{}
+	\pyfile{dual_graph.py}{0}{1000}\label{dual_graph.py}
+	\subsection{}
+	\pyfile{Graph.py}{0}{1000}\label{Graph.py}
+	\subsection{}
+	\pyfile{medial_graph.py}{0}{1000}\label{medial_graph.py}
+	\subsection{}
+	\pyfile{test-cubic-cross-validate.py}{0}{1000}\label{test-cubic-cross-validate.py}
+	\subsection{}
+	\pyfile{test-planar-graphs.py}{0}{1000}\label{test-planar-graphs.py}
+	\subsection{}
+	\pyfile{util.py}{0}{1000}\label{util.py}
+	\subsection{}
+	\pyfile{graphs/gen-random-planar-cubic.py}{0}{1000}\label{graphs/gen-random-planar-cubic.py}
+	\subsection{}
+	\pyfile{graphs/gen-planar.py}{0}{1000}\label{graphs/gen-planar.py}
+	\subsection{}
+	\pyfile{graphs/process_planar_code.py}{0}{1000}\label{graphs/process_planar_code.py}
+	\subsection{}
 \end{document}

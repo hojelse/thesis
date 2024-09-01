@@ -1,15 +1,14 @@
-from Graph import Graph
-from parse_graph import adj_to_text, parse_text_to_adj
+from Graph import Graph, read_lmg_from_stdin
 
 # Assume G is a rotation system
-def dual_graph(G: Graph) -> Graph:
+def dual_graph(G: Graph) -> tuple[Graph, dict[int, int], dict[int, int], dict[int, list[int]], dict[int, int]]:
 	edges = [e for e in G.E()]
 
 	D = Graph()
-	edge_to_link = dict()
-	link_to_edge = dict()
-	node_to_face = dict() # nodeid to edgeid list
-	edge_to_node = dict() # half-edge to the faceid/node to its either left/right
+	edge_to_link: dict[int, int] = dict()
+	link_to_edge: dict[int, int] = dict()
+	node_to_face: dict[int, list[int]] = dict()  # nodeid to edgeid list
+	edge_to_node: dict[int, int] = dict()        # half-edge to the faceid/node to its either left/right
 
 	# Find faces
 	next_nodeid = -1
@@ -38,7 +37,7 @@ def dual_graph(G: Graph) -> Graph:
 	for i,f1 in node_to_face.items():
 		for j,f2 in node_to_face.items():
 			if i < j:
-				common_edges = set(list(map(abs, f1))).intersection(set(map(abs, f2)))
+				common_edges = set(set(map(abs, f1))).intersection(set(map(abs, f2)))
 				for e in common_edges:
 					D.edge_to_vertexpair[next_linkid] = (i, j)
 					D.edge_to_vertexpair[-next_linkid] = (j, i)
@@ -56,11 +55,10 @@ def dual_graph(G: Graph) -> Graph:
 	return D, edge_to_link, link_to_edge, node_to_face, edge_to_node
 
 if __name__ == "__main__":
-	adj = parse_text_to_adj()
 	G = Graph()
-	G.from_adj(adj)
+	G.from_lmg(read_lmg_from_stdin())
 	D, edge_to_link, link_to_edge, node_to_face, edge_to_node = dual_graph(G)
-	adj_to_text(D.adj())
+	print_adj(D.adj())
 	print("edge_to_link", edge_to_link)
 	print("link_to_edge", link_to_edge)
 	print("node_to_face", node_to_face)

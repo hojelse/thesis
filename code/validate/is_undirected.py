@@ -1,6 +1,6 @@
-from parse_graph import parse_text_to_adj
+from util import adj_from_stdin
 
-G = parse_text_to_adj()
+G = adj_from_stdin()
 
 def is_undirected(G):
 	for x,ys in G.items():

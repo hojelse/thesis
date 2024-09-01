@@ -1,15 +1,30 @@
-from Graph import Graph
-from parse_graph import adj_to_text, parse_text_to_adj
+from Graph import Graph, read_lmg_from_stdin
 
-# assume G might have parallel edges
-# assume G do not have self-loops
+# assume G might have parallel edges and self-loops
 # assume adjacency list of G has clockwise ordering of neighbors
-def contraction(G: Graph, a: int, b: int) -> Graph:
+# assume a != b
+def contraction(G: Graph, a: int, b: int) -> tuple[Graph, int]:
 	# copy G
 	G1 = G.copy()
 
 	# create new vertex c
 	c = max(G1.adj_edges.keys()) + 1
+
+	# find edges connecting a and b
+	edges_a_b = []
+	for e in G1.adj_edges[a] + G1.adj_edges[b]:
+		u,v = G1.edge_to_vertexpair[e]
+		if (u == a and v == b) or (u == b and v == a):
+			edges_a_b.append(e)
+
+	# create neighborhood of c while preserving clockwise ordering
+	idx1 = G1.adj_edges[a].index(edges_a_b[0])
+	rotated_Ga = G1.adj_edges[a][idx1:] + G1.adj_edges[a][:idx1]
+
+	idx2 = G1.adj_edges[b].index(-edges_a_b[0])
+	rotated_Gb = G1.adj_edges[b][idx2:] + G1.adj_edges[b][:idx2]
+
+	G1.adj_edges[c] = rotated_Ga + rotated_Gb
 
 	# let every edge incident to a or b be incident to c instead
 	for e in G1.E():
@@ -20,27 +35,9 @@ def contraction(G: Graph, a: int, b: int) -> Graph:
 		if v == a or v == b:
 			G1.edge_to_vertexpair[e] = (u, c)
 
-	# create neighborhood of c
-	def index_of_first(lst, pred):
-		for i, v in enumerate(lst):
-			if pred(v):
-				return i
-		return None
-
-	index_of_first_shared_edge = index_of_first(G1.adj_edges[a], lambda e: G1.edge_to_vertexpair[e][0] == c and G1.edge_to_vertexpair[e][1] == c)
-	first_shared_edge = G1.adj_edges[a][index_of_first_shared_edge]
-
-	idx1 = G1.adj_edges[a].index(first_shared_edge)
-	rotated_Ga = G1.adj_edges[a][idx1:] + G1.adj_edges[a][:idx1]
-
-	idx2 = G1.adj_edges[b].index(-first_shared_edge)
-	rotated_Gb = G1.adj_edges[b][idx2:] + G1.adj_edges[b][:idx2]
-
-	G1.adj_edges[c] = rotated_Ga + rotated_Gb
-
-	# remove self-loops on c
-	G1.adj_edges[c] = [e for e in G1.adj_edges[c] if not (G1.edge_to_vertexpair[e][0] == G1.edge_to_vertexpair[e][1] == c)]
-	G1.edge_to_vertexpair = dict([(k,v) for k,v in G1.edge_to_vertexpair.items() if not (v[0] == v[1] == c)])
+	# remove all edges connecting a and b
+	G1.adj_edges[c] = [e for e in G1.adj_edges[c] if e not in edges_a_b]
+	G1.edge_to_vertexpair = dict([(e,uv) for e,uv in G1.edge_to_vertexpair.items() if e not in edges_a_b])
 
 	# remove a and b
 	del G1.adj_edges[a]
@@ -50,10 +47,8 @@ def contraction(G: Graph, a: int, b: int) -> Graph:
 
 if __name__ == "__main__":
 	a,b = map(int, input().split())
-	adj = parse_text_to_adj()
-
 	G = Graph()
-	G.from_adj(adj)
+	G.from_lmg(read_lmg_from_stdin())
 	G1, c = contraction(G, a, b)
-	adj_to_text(G1.adj())
+	print(G1)
 	print("c", c)

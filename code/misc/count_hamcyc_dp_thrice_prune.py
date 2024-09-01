@@ -1,5 +1,5 @@
 import sys
-from parse_graph import parse_graph_to_adj
+from util import parse_graph_to_adj
 
 def find_faces(adj: dict[int, list[int]]) -> list[list[(int, int)]]:
 	# assume planar graph

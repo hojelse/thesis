@@ -1,9 +1,19 @@
-from parse_graph import parse_graph_to_adj
+def adj_from_stdin() -> dict[int, list[int]]:
+	adj = dict()
+	n = int(input())
+	for _ in range(n):
+		ys = list(map(int, input().split()))
+		x = ys[0]
+		adj[x] = []
+		for y in ys[1:]:
+			adj[x].append(y)
+	return adj
 
 # The branchwidth of G is the minimum width of any of its branch-decompositions.
 def branch_width(G):
 	Ts = branch_decompositions(G)
 	min_T = min(Ts, key=width_of_branch_decomposition)
+	print(min_T)
 	return width_of_branch_decomposition(min_T)
 
 # A branch-decomposition of a graph G is a tree T such that:
@@ -133,6 +143,6 @@ def enumerate_trees(leaves):
 
 		return new_trees
 
-adj = parse_graph_to_adj()
+adj = adj_from_stdin()
 
 print(branch_width(adj))

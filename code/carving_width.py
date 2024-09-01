@@ -1,7 +1,5 @@
 import math
-
-from Graph import Graph
-from parse_graph import adj_to_text, adj_to_text_2, parse_text_to_adj
+from Graph import Graph, read_lmg_from_stdin
 from dual_graph import dual_graph
 
 def carving_width(G: Graph) -> int:
@@ -89,13 +87,13 @@ def carving_width(G: Graph) -> int:
 		if max([len(G.N(v)) for v in G.V()]) >= k:
 			return True
 
-		# Set up the game states
+		# Set up the game graph
 		halfedges = edge_to_link.keys()
 
 		T = set([(e, tuple(C)) for e in halfedges for C in quiet_components(e, k)])
 		S = set([(f, v) for f in node_to_face.keys() for v in G.V()])
 
-		# Set up the losing states
+		# Set up the initial losing states
 		losing_T = set()
 		losing_S = set()
 
@@ -158,9 +156,7 @@ def carving_width(G: Graph) -> int:
 	return cw
 
 if __name__ == "__main__":
-	adj = parse_text_to_adj()
-
 	G = Graph()
-	G.from_adj(adj)
+	G.from_lmg(read_lmg_from_stdin())
 	cw = carving_width(G)
 	print("cw", cw)

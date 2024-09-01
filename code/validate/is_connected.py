@@ -1,4 +1,4 @@
-from parse_graph import parse_text_to_adj
+from code.graphs.parse_graph import parse_text_to_adj
 
 G = parse_text_to_adj()
 

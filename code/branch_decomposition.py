@@ -1,27 +1,32 @@
-import log
-from parse_graph import parse_text_to_adj
-from medial_graph import medial_graph, medial_graph_2
+from typing import Union
+from Graph import Graph, read_lmg_from_stdin
+from medial_graph import medial_graph
 from carving_decomposition import carving_decomposition
+from util import adj_to_str
+
+def carving_decomposition_to_branch_decomposition(
+	cd: dict[int, list[int]],
+	node_to_vertexpair: dict[int, tuple[int, int]]
+) -> dict[int, list[Union[int, tuple[int, int]]]]:
+
+	leafs = [u for u,vs in cd.items() if len(vs) == 1]
+
+	bd = dict()
+	for u,vs in cd.items():
+		bd[u if u not in leafs else node_to_vertexpair[u]] = [v if v not in leafs else node_to_vertexpair[v] for v in vs]
+
+	return bd
 
 # Construct a branch decomposition of a graph
-def branch_decomposition(G_adj: dict[int, list[int]]):
-	# Contruct the carving decomposition of the medial graph
-	Gx, node_to_vertexpair = medial_graph(G_adj)
-
+def branch_decomposition(G: Graph) -> dict[int, list[Union[int, tuple[int, int]]]]:
+	Gx, node_to_vertexpair = medial_graph(G)
 	cd = carving_decomposition(Gx.copy())
-
-	# Convert the carving decomposition of M to a branch decomposition of G
-	def decomp(t):
-		if isinstance(t, int):
-			return node_to_vertexpair[t]
-		return tuple([decomp(a) for a in t])
-	
-	bd = decomp(cd)
-
-	log.add("Branch decomposition: " + str(bd))
+	bd = carving_decomposition_to_branch_decomposition(cd, node_to_vertexpair)
+	print(adj_to_str(bd))
 	return bd
 
 if __name__ == "__main__":
-	adj = parse_text_to_adj()
-	bd = branch_decomposition(adj)
-	print(bd)
+	G = Graph()
+	G.from_lmg(read_lmg_from_stdin())
+	bd = branch_decomposition(G)
+	print("bd", bd)

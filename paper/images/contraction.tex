@@ -15,6 +15,7 @@
 		\draw[line width=0.5mm] (4) -- node[right] {4} (5);
 		\draw[line width=0.5mm] (3) to[bend left=40] node[above] {5} (5);
 		\draw[line width=0.5mm] (3) to[bend right=40] node[below] {6} (5);
+		\draw[line width=0.5mm] (4) to[in=125,out=55,loop, min distance=1cm] node[above] {7} (4);
 	\end{scope}
 	
 	\begin{scope}[xshift=6cm, yshift=0cm]
@@ -31,6 +32,7 @@
 		\draw[line width=0.5mm] (2) -- node[left] {2} (3);
 		\draw[line width=0.5mm] (2) -- node[above] {3} (4);
 		\draw[line width=0.5mm] (4) -- node[right] {4} (3);
+		\draw[line width=0.5mm] (4) to[in=125,out=55,loop, min distance=1cm] node[above] {7} (4);
 	\end{scope}
 
 	\begin{scope}[xshift=12cm, yshift=0cm]
@@ -48,5 +50,6 @@
 		\draw[line width=0.5mm] (2) -- node[above] {3} (4);
 		\draw[line width=0.5mm] (3) to[bend left=30] node[above] {5} (4);
 		\draw[line width=0.5mm] (3) to[bend right=30] node[below] {6} (4);
+		\draw[line width=0.5mm] (4) to[in=125,out=55,loop, min distance=1cm] node[above] {7} (4);
 	\end{scope}
 \end{tikzpicture}

@@ -1,7 +1,7 @@
 import networkx as nx
-from parse_graph import parse_text_to_adj, adj_to_nx
+from util import adj_from_stdin, adj_to_nx
 
-G = adj_to_nx(parse_text_to_adj())
+G = adj_to_nx(adj_from_stdin())
 
 def is_simple(G):
 	for v in G.nodes:
