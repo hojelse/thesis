@@ -1,0 +1,18 @@
+\begin{tikzpicture}
+	\node (G) at (2, 1) {Contract $(8,3)$};
+	% Define the nodes with specific positions
+	\begin{scope}[xshift=0cm, yshift=0cm, scale=0.6]
+		\node[circle, draw] (1) at (8, -0) {1};
+		\node[circle, draw] (2) at (3, -8) {2};
+		\node[circle, draw] (9) at (-2, -0) {9};
+	
+		% Draw the edges between nodes with labels
+		\draw[draw] (9) -- node[right] {5} (2);
+		\draw[draw] (9) to[bend left=5] node[left] {6} (2);
+		\draw[draw] (2) to[bend left=5] node[below left] {7} (9);
+		\draw[draw] (1) -- node[below right] {8} (2);
+		\draw[draw] (1) to[bend right=5] node[above] {9} (9);
+		\draw[draw] (1) to[bend left=5] node[above left] {10} (9);
+		\draw[draw] (1) -- node[below right] {11} (9);
+	\end{scope}
+\end{tikzpicture}

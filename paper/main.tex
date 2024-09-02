@@ -260,6 +260,16 @@
 
 	Branch-decompositions are adjacency lists with either integers or integer pairs as vertices\\ \mintinline{py}{dict[int, list[Union[int, tuple[int, int]]]]}.
 
+	The tetrahedral graph is a simple connected planar graph with 4 vertices and 6 edges. It is also know as the complete graph on 4 vertices $K_4$. The tetrahedral graph is used as a running example.
+
+	\begin{figure}[H]
+		\centering
+		% \includegraphics[width=\textwidth/2]{./images/k4/gm.png}
+		\input{./images/k4/g.tex}
+		\caption{The tetrahedral graph}
+		\label{fig:tetrahedral}
+	\end{figure}
+
 \section{The algorithm}
 
 	The main computational problem of this paper is \textsc{The Planar Minimum Branch Decomposition Problem}.
@@ -298,6 +308,13 @@
 
 	\pyfile{branch_decomposition.py}{20}{25}
 
+	\begin{figure}[H]
+		\centering
+		\input{images/k4/bd.tex}
+		\caption{Minimum Branch Decomposition of the Tetrahedral Graph with a branch width of 3.}
+		\label{fig:bd}
+	\end{figure}
+
 	The next 3 subsections describe the implementation of the subroutines for the problems \ref{problem:medial}, \ref{problem:mcd}, and \ref{problem:mcd-to-mbd}.
 
 	\subsection{Medial graph}
@@ -312,6 +329,13 @@
 
 		\pyfile{medial_graph.py}{4}{50}
 
+		\begin{figure}[H]
+			\centering
+			\input{./images/k4/gmedial.tex}
+			\caption{The Tetrahedral Graph (in black) and Medial graph of the Tetrahedral Graph (in blue)}
+			\label{fig:gmedial}
+		\end{figure}
+
 	\subsection{Minimum Branch Decomposition from Minimum Carving Decomposition}
 
 		Solving problem \ref{problem:mcd-to-mbd}.
@@ -319,6 +343,14 @@
 		The implementation identifies the leaf vertices and maps them to vertex-pairs according to the relation \mintinline{py}{node_to_vertexpair} from the computation of the medial graph.
 
 		\pyfile{branch_decomposition.py}{6}{17}
+
+		\begin{figure}[H]
+			\centering
+			\input{images/k4/bd.tex}
+			\input{images/k4/cd.tex}
+			\caption{Minimum Branch Decomposition (left) of the Tetrahedral Graph and a Minimum Carving Decomposition (right) of the Medial Graph.}
+			\label{fig:m}
+		\end{figure}
 			
 	\subsection{Minimum Carving Decomposition}
 
@@ -331,6 +363,17 @@
 		The \mintinline{py}{contraction} function, given a pair of vertices $u,v$, returns a new unique vertex ID $w$ (instead of reusing $u$ as definition \ref{def:contraction} suggests), therefore by keeping track of which vertex is a contraction of which vertex-pair, in a dictionary, constructing the decomposition is then a matter of recursively looking up vertices in the dictionary. Repeating this until only vertices of $M$ remain gives a carving decomposition.
 
 		\pyfile{carving_decomposition.py}{7}{79}
+
+		\begin{figure}[H]
+			\centering
+			\input{./images/k4/m.tex}
+			\input{./images/k4/zcontract1.tex}
+			\input{./images/k4/zcontract2.tex}
+			\input{./images/k4/zcontract3.tex}
+			\input{images/k4/cd.tex}
+			\caption{A series of contractions of the medial graph of the Tetrahedral Graph, with nonincreasing carving width. All graphs have a carving width of $6$. First contracting $(5,6)$ into $7$, then $(7,4)$ into $8$, and finally $(8,3)$ into $9$. Then assembling the series of contractions into a minimum carving decomposition by introducing vertex $10$.}
+			\label{fig:m}
+		\end{figure}
 
 		The contraction algorithm depends on a function to compute a contraction and a function to compute the carving width of a graph. These are referred to as problems \ref{problem:contraction} and \ref{problem:cw}.
 
@@ -358,6 +401,14 @@
 
 			\pyfile{contraction.py}{2}{46}
 
+			\begin{figure}[H]
+				\centering
+				\input{./images/k4/m.tex}
+				\input{./images/k4/zcontract1.tex}
+				\caption{A contraction of the medial graph of the Tetrahedral Graph given $(5,6)$ producing a new vertex $7$.}
+				\label{fig:m}
+			\end{figure}
+
 		\subsubsection{Carving Width}
 
 			Solving problem \ref{problem:cw}.
@@ -366,6 +417,8 @@
 
 			\pyfile{carving_width.py}{5}{5}
 			\pyfile{carving_width.py}{130}{156}
+
+			For the medial of the tetrahedral graph, the linear search gives for \mintinline{py}{rat_wins} for $k=0,1,2,3,4,5,6,7$ gives $True, True, True, True, True, True, True, False$, therefore the carving width of the medial of the tetrahedral graph is $6$.
 
 	\section{The Rat-Catching Algorithm}
 
@@ -415,24 +468,65 @@
 
 		You can mark vertices of the graph $H$ that are losing states, and then repeatedly mark any state that leads to a losing state, until either every state is marked or no more states can be marked. If every state is marked then the rat-catcher wins, otherwise the rat wins. Exactly how to propagate losing states is discussed below.
 
-		Solving problem \ref{problem:cw}.
+		\subsection{Dual graph}\label{impl:dual}
 
-		The vertices of the game state graph $H$ are initialized by computing the elements of $T$ and $S$, while edges of $H$ are not explicitly kept in any data structure, but instead checked while playing the game.
+			Solving problem \ref{problem:dual}.
 
-		The initial losing states (the tuples $(f,v) \in S$ where $v \in f$) are marked as losing.
+			No other path of the implementation needs the assumption that the dual is planar, therefore the output doesn't need to be a rotation system. This simplifies the implementation.
 
-		The outcome of the game is computed by marking states as losing.
-		
-		Considering a state $(e, C) \in T$, if all $(f, v)$ where $v \in V(C)$ is losing then $(e, C)$ is losing.
+			The dual has a vertex for each face of the input graph. The faces are found by selecting an unmarked half-edge, then marking all the edges of the face it belongs to, and repeating this until all half-edges are marked.
 
-		Considering a state $(f, v)$, if there exists a state $(e, C)$ that is losing where $e \in f$ and $v \in V(C)$ then $(f, v)$ is losing.
+			The next halfedge $e_{i+1}$ after the current halfedge $e_i = \{u, v\}$ is the edge just before $-e_i$ in the neighborhood list for vertex $v$.
+			
+			The relations \mintinline{py}{node_to_face} and \mintinline{py}{edge_to_node} are useful for previously mentioned subproblems, and are computed here while enumerating the faces.
 
-		Apply the two rules above until either no more new losing states are marked, or until every state is marked as losing.
+			\pyfile{dual_graph.py}{4}{56}
 
-		It is useful for the implementation to have a relation \mintinline{py}{edge_to_node} mapping the two half-edges of an edge to the two faces to either side of the edge, and a relation \mintinline{py}{node_to_face} to enumerate the faces. These relation are computed in the \mintinline{py}{dual_graph} function.
+			\begin{figure}[H]
+				\centering
+				\input{./images/k4/dual.tex}
+				\caption{The medial graph of the Tetrahedral Graph and its dual. Vertex 5 is the vertex for the outerface and therefore visually repeated.}
+				\label{fig:m}
+			\end{figure}
 
-		\pyfile{carving_width.py}{5}{6}
-		\pyfile{carving_width.py}{79}{128}
+		\subsection{Does the rat win?}
+
+			Solving problem \ref{problem:cw}.
+
+			The vertices of the game state graph $H$ are initialized by computing the elements of $T$ and $S$, while edges of $H$ are not explicitly kept in any data structure, but instead checked while playing the game.
+
+			The initial losing states (the tuples $(f,v) \in S$ where $v \in f$) are marked as losing.
+
+			The outcome of the game is computed by marking states as losing.
+			
+			Considering a state $(e, C) \in T$, if all $(f, v)$ where $v \in V(C)$ is losing then $(e, C)$ is losing.
+
+			Considering a state $(f, v)$, if there exists a state $(e, C)$ that is losing where $e \in f$ and $v \in V(C)$ then $(f, v)$ is losing.
+
+			Apply the two rules above until either no more new losing states are marked, or until every state is marked as losing.
+
+			It is useful for the implementation to have a relation \mintinline{py}{edge_to_node} mapping the two half-edges of an edge to the two faces to either side of the edge, and a relation \mintinline{py}{node_to_face} to enumerate the faces. These relation are computed in the \mintinline{py}{dual_graph} function.
+
+			\pyfile{carving_width.py}{5}{6}
+			\pyfile{carving_width.py}{79}{128}
+
+			\begin{figure}[H]
+				\centering
+				\input{./images/k4/quiet/k5/1.tex}
+				\input{./images/k4/quiet/k5/2.tex}
+				\input{./images/k4/quiet/k5/3.tex}
+				\input{./images/k4/quiet/k5/4.tex}
+				\input{./images/k4/quiet/k5/5.tex}
+				\input{./images/k4/quiet/k5/6.tex}
+				\input{./images/k4/quiet/k5/7.tex}
+				\input{./images/k4/quiet/k5/8.tex}
+				\input{./images/k4/quiet/k5/9.tex}
+				\input{./images/k4/quiet/k5/10.tex}
+				\input{./images/k4/quiet/k5/11.tex}
+				\input{./images/k4/quiet/k5/12.tex}
+				\caption{The medial of the Tetrahedral Graph and the quiet components for noise level $k=5$, given the rat-catcher is on edge $1,...,12$.}
+				\label{fig:quiet}
+			\end{figure}
 
 		\subsection{Quiet subgraph}
 
@@ -456,19 +550,12 @@
 
 			\pyfile{carving_width.py}{5}{74}
 
-		\subsection{Dual graph}\label{impl:dual}
-
-			Solving problem \ref{problem:dual}
-
-			No other path of the implementation needs the assumption that the dual is planar, therefore the output doesn't need to be a rotation system. This simplifies the implementation.
-
-			The dual has a vertex for each face of the input graph. The faces are found by selecting an unmarked half-edge, then marking all the edges of the face it belongs to, and repeating this until all half-edges are marked.
-
-			The next halfedge $e_{i+1}$ after the current halfedge $e_i = \{u, v\}$ is the edge just before $-e_i$ in the neighborhood list for vertex $v$.
-			
-			The relations \mintinline{py}{node_to_face} and \mintinline{py}{edge_to_node} are useful for previously mentioned subproblems, and are computed here while enumerating the faces.
-
-			\pyfile{dual_graph.py}{4}{56}
+			\begin{figure}[H]
+				\centering
+				\input{images/k4/quiet/quiet-k4-k5-e9.tex}
+				\caption{The quiet component for edge $9$ with noise level $k=5$. The quiet edges are in solid and the noisy edges are dashed. Vertex 5 is the vertex for the outerface and therefore visually repeated.}
+				\label{fig:quiet}
+			\end{figure}
 
 \section{Results}
 	The algorithm has been implemented in Python 3.12.2. The source code is available on GitHub \footnote{\url{https://github.com/hojelse/thesis}}.
