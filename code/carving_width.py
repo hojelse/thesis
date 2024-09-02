@@ -12,7 +12,7 @@ def carving_width(G: Graph) -> int:
 		s,t = D.edge_to_vertexpair[l]
 		links = link_to_edge.keys()
 
-		def dists(n: int) -> dict[int, int]:
+		def dists(n: int) -> dict[int, int]: # BFS
 			dist = {v: -1 for v in D.V()}
 			dist[n] = 0
 			queue = [n]
@@ -57,7 +57,7 @@ def carving_width(G: Graph) -> int:
 		components = []
 		unseen = set(quiet_subgraph.keys())
 
-		while len(unseen) > 0:
+		while len(unseen) > 0: # DFS
 			v = unseen.pop()
 			component = [v]
 			stack = [v]
@@ -106,12 +106,12 @@ def carving_width(G: Graph) -> int:
 
 		# Play the game
 		while True:
-			new_deletion = False
+			at_least_one_new_losing = False
 
 			for (e, C) in T:
 				if all([(edge_to_node[e], v) in losing_S for v in C]):
 					if (e, C) not in losing_T:
-						new_deletion = True
+						at_least_one_new_losing = True
 						losing_T.add((e, C))
 
 			for (e, C) in losing_T:
@@ -119,12 +119,12 @@ def carving_width(G: Graph) -> int:
 				f2 = edge_to_node[-e]
 				for (f, v) in [(f1, v) for v in C] + [(f2, v) for v in C]:
 					if (f, v) not in losing_S:
-						new_deletion = True
+						at_least_one_new_losing = True
 						losing_S.add((f, v))
 
 			if len(T) == len(losing_T) or len(S) == len(losing_S):
 				return False
-			elif not new_deletion:
+			elif not at_least_one_new_losing:
 				return True
 
 	def binary_search_cw():

@@ -11,7 +11,7 @@
 \maketitle
 
 \begin{center}
-	\includegraphics[width=0.9\textwidth]{images/dalle-pied-piper.png}
+	\includegraphics[width=0.9\textwidth]{images/dalle-pied-piper-2.png}
 \end{center}
 \footnote{Illustration by Dall-E via ChatGPT (GPT-4o) with the prompt "Generate an image of pied piper the rat-catcher along with a computer science graph".}
 
@@ -294,9 +294,9 @@
 		Given a minimum carving decomposition of a medial graph of $G$, output a minimum branch decomposition of $G$.
 	\end{problem}
 
-	With subroutines for all three problems, the implementation obtains a branch decomposition like so.
+	With subroutines for all three problems, the implementation obtains a branch decomposition.
 
-	\pyfile{branch_decomposition.py}{19}{27}
+	\pyfile{branch_decomposition.py}{20}{25}
 
 	The next 3 subsections describe the implementation of the subroutines for the problems \ref{problem:medial}, \ref{problem:mcd}, and \ref{problem:mcd-to-mbd}.
 
@@ -310,7 +310,7 @@
 		
 		From the perspective of a medial node $v^\times$, the first two links are added to its neighborhood in counterclockwise ordering, after processing the first face, and later the final two links are added in counterclockwise ordering, after processing the second face. Therefore the medial graph $M$ is a rotation system.
 
-		\pyfile{medial_graph.py}{4}{54}
+		\pyfile{medial_graph.py}{4}{50}
 
 	\subsection{Minimum Branch Decomposition from Minimum Carving Decomposition}
 
@@ -364,16 +364,16 @@
 
 			The rat-catching algorithm decides whether $cw(M) \geq k$ with $k \in \mathbb{N}^+$. The boolean results of this algorithm for $k=\{1,2,3,...\}$ are monotonic, so you can perform a binary or linear search to find the smallest $k$ where $cw(M) \geq k$ is true.
 
-			\pyfile{carving_width.py}{5}{6}
+			\pyfile{carving_width.py}{5}{5}
 			\pyfile{carving_width.py}{130}{156}
 
 	\section{The Rat-Catching Algorithm}
 
-		The rat-catching algorithm decides $cw(M) \geq k$ with $k \in \mathbb{N}^+$.
+		The rat-catching algorithm decides $cw(M) \geq k$ with $M$ being a graph and $k \in \mathbb{N}^+$.
 
-		The rat-catching algorithm can be described as a game of two players, the rat and rat-catcher. Considering a graph $M$, the edges of a face can be thought of as walls of a room and vertices as the corners of some rooms. The rat moves from corner to corner along the walls and the rat-catcher moves from room to room through some wall. The rat-catcher can force the rat away from some walls by making noise. A round of this game is played with some noise level $k$. The rat-catcher wins the round if they can force the rat to be in some wall of the room that they are in, and the rat wins the round if there is a strategy whereby the rat can escape indefinitely.
+		The rat-catching algorithm can be described as a game of two players, the rat and rat-catcher. Considering a graph $M$, the edges of a face can be thought of as walls of a room and vertices as the corners of some rooms. The rat moves from corner to corner along the walls and the rat-catcher moves from room to wall to room again. The rat-catcher can force the rat away from some walls by making noise. A round of this game is played with some noise level $k$. The rat-catcher wins the round if they can force the rat to be in some wall of the room that they are in, and the rat wins the round if there is a strategy whereby the rat can escape indefinitely.
 
-		Additionally, if $\Delta(M) \geq k$ then the rat wins. The argument for why this is true is glossed over in \ref{BGZ15}.
+		Additionally, if $\Delta(M) \geq k$ then the rat wins. The argument for why this is true, is glossed over in \cite{BGZ15}, but is important to include.
 
 		So if $\Delta(M) < k$, then the game is played to determine an outcome, otherwise the rat is said to win.
 
@@ -381,22 +381,22 @@
 
 		For some noise level and location of the rat-catcher, exactly which edges are noisy and which are quiet are definitions \ref{def:edge-noisy} and \ref{def:face-quiet}.
 
+		An edge $e$ is called quiet iff. $e$ is not noisy.
+
 		\begin{definition}\label{def:edge-noisy}
 			When the rat-catcher is on some edge $e_1$, then edge $e_2$ is noisy iff. there is a closed walk of length scrictly less than $k$ containing $e_1^*$ and $e_2^*$ in the dual $M^*$.
 		\end{definition}
-
-		An edge $e$ is called quiet iff. $e$ is not noisy.
 
 		\begin{definition}\label{def:face-quiet}
 			When the rat-catcher is in some face $f$, then edge $e$ is noisy iff. there is a closed walk of length scrictly less than $k$ containing $f^*$ and $e^*$ in the dual $M^*$.
 		\end{definition}
 
-		A \textit{quiet subgraph} $Q(M, k, e)$, for some graph $M$ and some noise level $k$ and some edge $e \in \mathbb{E}(M)$, is a subgraph of $M$ with the vertex set $V(Q(M, k, e)) = V(M)$ and the edge set
+		A \textit{quiet subgraph} $Q$, for some graph $M$ and some noise level $k$ and some edge $e \in \mathbb{E}(M)$, is a subgraph of $M$ with the vertex set $V(Q) = V(M)$ and the edge set
 
-		$\mathbb{E}(Q(M, k, e)) = \{e_1 \st $ every closed walk of $M^*$ containing $e_1^*$ and $e_2^*$ has length at least $k\}$
+		$\mathbb{E}(Q) = \{e_1 \st $ every closed walk of $M^*$ containing $e_1^*$ and $e_2^*$ has length at least $k\}$
 
 		\begin{problem}\label{problem:noisy-subgraph}
-			Given a plane graph $M$ that might have parallel edges, an edge $e \in \mathbb{E}(M)$, and noise level $k \in \mathbb{N}^+$, output the quiet subgraph $Q(M, k, e)$.
+			Given a plane graph $M$ that might have parallel edges, an edge $e \in \mathbb{E}(M)$, and noise level $k \in \mathbb{N}^+$, output the quiet subgraph $Q$.
 		\end{problem}
 
 		Problem \ref{problem:noisy-subgraph} depends on a function for computing the dual of a graph. Computing a dual graph is problem \ref{problem:dual}.
@@ -407,21 +407,19 @@
 
 		The game states and possible moves, for some graph $M$ and some noise level $k$, can be described as a graph $H(M, k)$.
 
-		Let $F(M)$ be the set of faces of $M$.
-
 		Let $S$ be every possible state when the rat-catcher is in a face, some of which might be losing states. $S = \{ (f, v) \st v \in V(M) \land f$ is a face of $ M \}$.
 
-		Let $T$ be every possible state when the rat-catcher is on an edge. $T = \{ (e, C) \st e \in \mathbb{E}(M) \land C$ is a component of $Q(M, k, e) \}$.
+		Let $T$ be every possible state when the rat-catcher is on an edge. $T = \{ (e, C) \st e \in \mathbb{E}(M) \land C$ is a component of $Q \}$.
 		
 		With the graph of possible moves $H$, the only missing piece of the rat-catching algorithm is how to determine the outcome.
 
-		You can mark vertices of the graph $H$ that are losing states, and then repeatedly mark any state that leads to a losing state, until either every state is marked or no more states can be marked. If every state is marked then the rat-catcher wins, otherwise the rat wins.
+		You can mark vertices of the graph $H$ that are losing states, and then repeatedly mark any state that leads to a losing state, until either every state is marked or no more states can be marked. If every state is marked then the rat-catcher wins, otherwise the rat wins. Exactly how to propagate losing states is discussed below.
 
 		Solving problem \ref{problem:cw}.
 
 		The vertices of the game state graph $H$ are initialized by computing the elements of $T$ and $S$, while edges of $H$ are not explicitly kept in any data structure, but instead checked while playing the game.
 
-		Losing states (the tuples $(f,v) \in S$ where $v \in f$) are marked as losing.
+		The initial losing states (the tuples $(f,v) \in S$ where $v \in f$) are marked as losing.
 
 		The outcome of the game is computed by marking states as losing.
 		
@@ -429,6 +427,11 @@
 
 		Considering a state $(f, v)$, if there exists a state $(e, C)$ that is losing where $e \in f$ and $v \in V(C)$ then $(f, v)$ is losing.
 
+		Apply the two rules above until either no more new losing states are marked, or until every state is marked as losing.
+
+		It is useful for the implementation to have a relation \mintinline{py}{edge_to_node} mapping the two half-edges of an edge to the two faces to either side of the edge, and a relation \mintinline{py}{node_to_face} to enumerate the faces. These relation are computed in the \mintinline{py}{dual_graph} function.
+
+		\pyfile{carving_width.py}{5}{6}
 		\pyfile{carving_width.py}{79}{128}
 
 		\subsection{Quiet subgraph}
@@ -445,13 +448,13 @@
 
 			The single source shortest distances can then be computed using a breadth-first approach.
 
-			Using the mapping from links to edges, and the fact that an edge $e$ is called quiet iff. $e$ is not noisy, the quiet edges can be obtained by applying the map.
+			Using the relation \mintinline{py}{link_to_edge} and the fact that an edge $e$ is called quiet iff. $e$ is not noisy, the quiet edges can be obtained by applying the relation.
 
 			Computing the quiet subgraph and the components thereof is done with a depth-first search approach.
 
 			The edges of the components are irrelevant for the rest of the algorithm, so only a list of vertices is returned for each component.
 
-			\pyfile{carving_width.py}{6}{74}
+			\pyfile{carving_width.py}{5}{74}
 
 		\subsection{Dual graph}\label{impl:dual}
 
@@ -462,28 +465,30 @@
 			The dual has a vertex for each face of the input graph. The faces are found by selecting an unmarked half-edge, then marking all the edges of the face it belongs to, and repeating this until all half-edges are marked.
 
 			The next halfedge $e_{i+1}$ after the current halfedge $e_i = \{u, v\}$ is the edge just before $-e_i$ in the neighborhood list for vertex $v$.
+			
+			The relations \mintinline{py}{node_to_face} and \mintinline{py}{edge_to_node} are useful for previously mentioned subproblems, and are computed here while enumerating the faces.
 
 			\pyfile{dual_graph.py}{4}{56}
 
 \section{Results}
 	The algorithm has been implemented in Python 3.12.2. The source code is available on GitHub \footnote{\url{https://github.com/hojelse/thesis}}.
-	
+
 	The implementation has been tested against two sets of graphs, using various methods.
 
-	The first set of graphs are random cubic planar graphs. The second set of graphs are small simple planar graphs generated by \textit{Plantri}\footnote{\url{http://users.cecs.anu.edu.au/~bdm/plantri/}}\footnote{\url{https://github.com/mishun/plantri/tree/master}}.
+	The first set of graphs are random cubic planar graphs. The second set of graphs are small simple planar graphs generated by \textit{Plantri}\footnote{\url{http://users.cecs.anu.edu.au/~bdm/plantri/}}\footnote{\url{https://github.com/mishun/plantri/tree/master}}.\cite{BM}
 
 	The random cubic planar graphs is a set of 23 graphs, that were generated by a script, created by Andreas Björklund. See appendix \ref{graphs/gen-random-planar-cubic.py} for the generator script. The graphs are available on GitHub \footnote{\url{https://github.com/hojelse/thesis/tree/main/code/graphs/random-planar-cubic}}. They also created a branch width algorithm that was cross-validated with the implementation from this paper. The two algorithms agreed on every value. See appendix \ref{test-cubic-cross-validate.py} for the script.
 
-	The second set of small simple planar graphs was generated by Plantri, which exhaustively generated all $2228$ simple planar graphs on 2 to 7 vertices.  Testing the implementation on these graphs, the results are shown in figure \ref{fig:bw-planar}. The scripts for generating, processing, and testing this set of graphs are in appendix \ref{graphs/gen-planar.py}, \ref{graphs/process_planar_code.py}, and \ref{test-planar-graphs.py}. The graphs are available on GitHub \footnote{\url{https://github.com/hojelse/thesis/tree/main/code/graphs/simple-planar}}
+	The second set of small simple planar graphs was generated by Plantri, which exhaustively generated all $2228$ simple planar graphs on 2 to 7 vertices. Testing the implementation on these graphs, the results are shown in figure \ref{fig:bw-planar}. The scripts for generating, processing, and testing this set of graphs are in appendix \ref{graphs/gen-planar.py}, \ref{graphs/process_planar_code.py}, and \ref{test-planar-graphs.py}. The graphs are available on GitHub \footnote{\url{https://github.com/hojelse/thesis/tree/main/code/graphs/simple-planar}}
 
 	Fomin and Thilikos\cite{FT06} find a new theoretical upper bound on the branch width of planar graphs, $bw(G) \leq 4.5 \cdot \sqrt{n}$, where $n$ is the number of vertices in the graph.
 
-	Some of the graphs are suspected to be cause the implementation to go into an infinite loop, as the branch width is not computed within a reasonable time. So the implementation is suspectedly not correct for all planar graphs.
+	Some of the graphs are suspected to cause the implementation to go into an infinite loop, as the branch width is not computed within a reasonable time. So the implementation is suspectedly not correct for all planar graphs.
 
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=\textwidth]{./images/bw-planar.png}
-		\caption{Branch width of planar graphs generated by Plantri. The x-axis is the number of vertices in the graph, and the y-axis is the branch width. The red line is $\lfloor 4.5 \cdot \sqrt{n} \rfloor$. The blue dots are the branch width and the number directly next to it is the number of the graph with the same unique (n, bw) pair.}
+		\caption{Branch width of planar graphs generated by Plantri. The x-axis is the number of vertices in the graph, and the y-axis is the branch width. The red line is $\lfloor 4.5 \cdot \sqrt{n} \rfloor$. The blue dots are the branch width and the number directly next to it is the number of the graph with both the same number of vertices and the same branch width.}
 		\label{fig:bw-planar}
 	\end{figure}
 
@@ -497,9 +502,11 @@
 \section{Conclusion}
 	This paper presents a clear and accessible implementation of the rat-catching algorithm for planar graphs, based on the work of Seymour and Thomas. The implementation follows the original algorithm and is supported by a framework for testing correctness to ensure its reliability. The results regrettably show that there are still bugs to eliminate. The source code provided alongside this paper is intended as a practical resource for those working on algorithm design involving branch- and carving decompositions. I hope this work will be useful for students, researchers, or practitioners looking to learn about, use, or develop a branch-decomposition algorithm by examining, using, or modifying the code provided alongside this paper. \url{https://github.com/hojelse/thesis}.
 
+\section{Acknowledgements}
+	I would like to thank my supervisors, Thore Husfeldt and Andreas Björklund, for their guidance and support throughout this project. I would also like to thank Andreas Björklund for providing the random cubic planar graphs and values for cross-validation. I would like to thank my family and friends for their support and encouragement.
+
 \newpage
-\section{References}
-	\printbibliography
+\printbibliography
 
 \newpage
 \section{Appendix}
@@ -531,5 +538,4 @@
 	\pyfile{graphs/gen-planar.py}{0}{1000}\label{graphs/gen-planar.py}
 	\subsection{}
 	\pyfile{graphs/process_planar_code.py}{0}{1000}\label{graphs/process_planar_code.py}
-	\subsection{}
 \end{document}

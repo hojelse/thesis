@@ -38,6 +38,7 @@ def branch_width(G: Graph) -> int:
 	return bw
 
 if __name__ == "__main__":
+	# Uncomment for multigraphs
 	# G = Graph()
 	# G.from_lmg(read_lmg_from_stdin())
 	# bw = branch_width(G)
