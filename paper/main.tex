@@ -342,7 +342,7 @@
 
 		The implementation identifies the leaf vertices and maps them to vertex-pairs according to the relation \mintinline{py}{node_to_vertexpair} from the computation of the medial graph.
 
-		\pyfile{branch_decomposition.py}{6}{17}
+		\pyfile{branch_decomposition.py}{7}{18}
 
 		\begin{figure}[H]
 			\centering
@@ -399,7 +399,7 @@
 
 			This is where telling apart two edges that are parallel, by having edge IDs, becomes very useful. Inferring where to stitch together the neighborhoods to preserve the clockwise ordering, solely from an adjacency list, is not a trivial problem.
 
-			\pyfile{contraction.py}{2}{46}
+			\pyfile{contraction.py}{3}{46}
 
 			\begin{figure}[H]
 				\centering
@@ -480,7 +480,7 @@
 			
 			The relations \mintinline{py}{node_to_face} and \mintinline{py}{edge_to_node} are useful for previously mentioned subproblems, and are computed here while enumerating the faces.
 
-			\pyfile{dual_graph.py}{4}{56}
+			\pyfile{dual_graph.py}{4}{55}
 
 			\begin{figure}[H]
 				\centering
