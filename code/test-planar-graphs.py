@@ -37,8 +37,6 @@ def run_command(file):
 		return f"Exception in {file}: {e}"
 
 for file in files:
-	if file <= "007-001957.in":
-		continue
 	st = time.time()
 	response = run_command(file)
 	elapsed_time = time.time() - st
